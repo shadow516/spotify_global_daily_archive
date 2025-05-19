@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Histórico Top‑10 Global Spotify</title>
 
+  <!-- DataTables CSS -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+  >
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      max-width: 900px;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    #fecha-select {
+      margin-bottom: 1rem;
+      padding: 0.3rem;
+      font-size: 1rem;
+    }
+    table.dataTable {
+      width: 100% !important;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Histórico Top‑10 Global Spotify</h1>
+
+  <label for="fecha-select">Selecciona fecha:</label>
+  <select id="fecha-select"></select>
+
+  <table id="tabla-top10" class="display">
+    <thead>
+      <tr>
+        <th>Posición</th>
+        <th>Cambio</th>
+        <th>Canción / Artista</th>
+        <th>Streams</th>
+        <th>Dif. Streams</th>
+        <th>Total</th>
+        <th>Fecha de Lanzamiento</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <!-- jQuery + DataTables JS -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('spotify_historial.json')
+        .then(res => res.json())
+        .then(data => {
+          // 1) Obtener y ordenar fechas de más reciente a más antiguo
+          const fechas = Object.keys(data).sort((a, b) => {
+            // asumiendo formato "YYYY-MM-DD"
+            return new Date(b) - new Date(a);
+          });
+
+          const select = document.getElementById('fecha-select');
+          fechas.forEach(fecha => {
+            const option = document.createElement('option');
+            option.value = fecha;
+            option.textContent = fecha;
+            select.appendChild(option);
+          });
+
+          // 2) Inicializar DataTable
+          const tabla = $('#tabla-top10').DataTable({
+            columns: [
+              { title: "Posición" },
+              { title: "Cambio" },
+              { title: "Canción / Artista" },
+              { title: "Streams" },
+              { title: "Dif. Streams" },
+              { title: "Total" },
+              { title: "Fecha de Lanzamiento" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            language: {
+              url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+            }
+          });
+
+          // 3) Función para renderizar la tabla de una fecha dada
+          function renderFecha(fecha) {
+            const top10 = data[fecha].top_10;
+            tabla.clear();
+            top10.forEach(item => {
+              tabla.row.add([
+                item.Posición,
+                item.Cambio,
+                item["Canción / Artista"],
+                item.Streams,
+                item["Stream Diff"],
+                item.Total,
+                item["Fecha de Lanzamiento"]
+              ]);
+            });
+            tabla.draw();
+          }
+
+          // 4) Evento al cambiar el select
+          select.addEventListener('change', () => {
+            renderFecha(select.value);
+          });
+
+          // 5) Renderizado inicial (fecha más reciente)
+          if (fechas.length) {
+            renderFecha(fechas[0]);
+          }
+        })
+        .catch(err => {
+          console.error('Error cargando JSON:', err);
+          alert('No se pudo cargar el histórico. ¿Está spotify_historial.json en el mismo directorio?');
+        });
+    });
+  </script>
+
+</body>
+</html>
