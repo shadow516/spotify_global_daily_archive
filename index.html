@@ -98,6 +98,17 @@
             const top10 = data[fecha].top_10;
             tabla.clear();
             top10.forEach(item => {
+              // Calculamos la fecha de lanzamiento real
+              let fechaLanzamiento = '-';
+              if (item["Fecha de Lanzamiento"] !== undefined && !isNaN(item["Fecha de Lanzamiento"])) {
+                const fechaTabla = new Date(fecha); // fecha de la tabla tipo "2022-05-22"
+                fechaTabla.setDate(fechaTabla.getDate() - parseInt(item["Fecha de Lanzamiento"]));
+                const año = fechaTabla.getFullYear();
+                const mes = String(fechaTabla.getMonth() + 1).padStart(2, '0');
+                const día = String(fechaTabla.getDate()).padStart(2, '0');
+                fechaLanzamiento = `${año}/${mes}/${día}`;
+              }
+            
               tabla.row.add([
                 item.Posición ?? '-',
                 item.Cambio ?? '-',
@@ -105,9 +116,10 @@
                 item.Streams ?? '-',
                 item["Stream Diff"] ?? '-',
                 item.Total ?? '-',
-                item["Fecha de Lanzamiento"] ?? '-'
+                fechaLanzamiento
               ]);
             });
+
             tabla.draw();
           }
 
