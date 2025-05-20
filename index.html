@@ -64,11 +64,13 @@
 
     .tables-container {
         display: flex;
-        flex-wrap: wrap; /* Allow wrapping on smaller screens */
-        gap: 4rem;
+        flex-wrap: wrap; /* Sigue permitiendo que se envuelvan en pantallas pequeñas */
+        gap: 4rem; /* Mantén un buen espacio entre ellas */
         width: 100%;
-        max-width: 1400px; /* Increased max-width for better table display */
-        justify-content: center; /* Center tables when wrapped */
+        max-width: 1400px; /* Asegura suficiente espacio */
+        margin: 0 auto; /* Centra el contenedor principal */
+        justify-content: space-between; /* ¡Este es el cambio clave! */
+        align-items: flex-start; /* Alinea la parte superior de las tablas */
     }
 
     .table-wrapper {
