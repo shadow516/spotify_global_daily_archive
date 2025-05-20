@@ -1,5 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Spotify Global Top‑10 History & Points</title>
+
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -63,14 +71,12 @@
     }
 
     .tables-container {
-        display: flex;
-        flex-wrap: wrap; /* Sigue permitiendo que se envuelvan en pantallas pequeñas */
-        gap: 4rem; /* Mantén un buen espacio entre ellas */
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
+        gap: 4rem;
         width: 100%;
-        max-width: 1400px; /* Asegura suficiente espacio */
-        margin: 0 auto; /* Centra el contenedor principal */
-        justify-content: space-between; /* ¡Este es el cambio clave! */
-        align-items: flex-start; /* Alinea la parte superior de las tablas */
+        max-width: 1400px;
+        margin: 0 auto;
     }
 
     .table-wrapper {
@@ -105,6 +111,8 @@
         border-bottom: 1px solid #333;
         color: #e0e0e0;
         font-size: 0.9rem;
+        white-space: normal; /* Permitir envoltura de texto */
+        word-wrap: break-word; /* Asegurar que el texto largo se divida */
     }
 
     table.dataTable tbody tr:nth-child(even) {
@@ -155,7 +163,7 @@
         font-weight: 600;
     }
 
-    .table-wrapper p { /* Styling for the "How does this work?" text */
+    .table-wrapper p {
         font-size: 0.9rem;
         line-height: 1.6;
         color: #b3b3b3;
@@ -164,7 +172,7 @@
     /* Responsive adjustments */
     @media (max-width: 1024px) {
         .tables-container {
-            flex-direction: column;
+            grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
             align-items: center;
         }
         .table-wrapper {
@@ -197,51 +205,9 @@
             font-size: 0.85rem;
         }
     }
-</style>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spotify Global Top‑10 History & Points</title>
-
-  <!-- DataTables CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
-  >
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      max-width: 1200px;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 1rem;
-    }
-    #controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-    #date-select {
-      padding: 0.3rem;
-      font-size: 1rem;
-    }
-    .tables-container {
-      display: flex;
-      gap: 2rem;
-    }
-    table.dataTable {
-      width: 100% !important;
-    }
-    .table-wrapper {
-      flex: 1;
-    }
   </style>
 </head>
 <body>
-
   <h1>Spotify Global Top‑10 History</h1>
 
   <div id="controls">
@@ -279,8 +245,7 @@
         <tbody></tbody>
       </table>
       <h3>How does this work?</h3>
-      Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won.
-      So, this system is a way to see it's popularity.
+      <p>Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won. So, this system is a way to see its popularity.</p>
     </div>
   </div>
 
@@ -305,6 +270,7 @@
 
           // Initialize Top10 DataTable
           const top10Table = $('#table-top10').DataTable({
+            autoWidth: false, // Desactivar ajuste automático de ancho
             columns: [
               { title: "Position" },
               { title: "Change" },
@@ -321,6 +287,7 @@
 
           // Initialize Points DataTable
           const pointsTable = $('#table-points').DataTable({
+            autoWidth: false, // Desactivar ajuste automático de ancho
             columns: [
               { title: "Rank" },
               { title: "Song / Artist" },
@@ -331,24 +298,24 @@
             lengthChange: false,
             language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
-          
+
           const pointsMap = {};
-          
+
           dates.forEach(date => {
             data[date].top_10.forEach(item => {
               const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
               const key = songName.trim().toLowerCase();
               if (!key) return;
-          
+
               const pos = Number(item.Posición || item.Position);
               if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
-          
+
               let pts = 0;
               if (pos === 1) pts = 12;
               else if (pos === 2) pts = 10;
               else if (pos === 3) pts = 8;
               else if (pos >= 4 && pos <= 10) pts = 11 - pos;
-          
+
               // CALCULA LA FECHA DE LANZAMIENTO
               let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
               if (days === -1) days = 0;
@@ -361,12 +328,12 @@
                 const da = String(d.getDate()).padStart(2, '0');
                 releaseDate = `${y}/${m}/${da}`;
               }
-          
+
               // Guarda la fecha de lanzamiento si todavía no la tenías
               if (!pointsMap[key]) {
                 pointsMap[key] = { song: songName, points: 0, releaseDate };
               }
-          
+
               pointsMap[key].points += pts;
             });
           });
@@ -377,9 +344,9 @@
               rank: idx + 1,
               song: item.song,
               points: item.points,
-              releaseDate: item.releaseDate // <- agrega esto
+              releaseDate: item.releaseDate
             }));
-          
+
           pointsArray.forEach(item => {
             pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
           });
@@ -419,6 +386,5 @@
         .catch(err => console.error('Error loading JSON:', err));
     });
   </script>
-
 </body>
 </html>
