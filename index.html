@@ -99,13 +99,13 @@
             tabla.clear();
             top10.forEach(item => {
               tabla.row.add([
-                item.Posición,
-                item.Cambio,
-                item["Canción / Artista"],
-                item.Streams,
-                item["Stream Diff"],
-                item.Total,
-                item["Fecha de Lanzamiento"]
+                item.Posición ?? '-',
+                item.Cambio ?? '-',
+                item["Canción / Artista"] ?? '-',
+                item.Streams ?? '-',
+                item["Stream Diff"] ?? '-',
+                item.Total ?? '-',
+                item["Fecha de Lanzamiento"] ?? '-'
               ]);
             });
             tabla.draw();
