@@ -11,6 +11,30 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+    .dataTables_filter input {
+          padding: 0.7rem 1.2rem;
+          font-size: 1rem;
+          border-radius: 5px;
+          border: 1px solid #333;
+          background-color: #282828;
+          color: #ffffff; /* Texto blanco para lo que se escribe */
+          transition: border-color 0.3s ease;
+      }
+      
+      .dataTables_filter input::placeholder {
+          color: #b3b3b3; /* Color del placeholder para que sea legible */
+      }
+      
+      .dataTables_filter input:hover,
+      .dataTables_filter input:focus {
+          border-color: #1DB954; /* Borde verde de Spotify al interactuar */
+          outline: none;
+      }
+      
+      .dataTables_filter label {
+          color: #b3b3b3; /* Color del texto "Search:" */
+          font-size: 1.1rem;
+      }
     body {
         font-family: 'Poppins', sans-serif;
         margin: 0;
