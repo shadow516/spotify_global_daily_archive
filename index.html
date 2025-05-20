@@ -44,7 +44,7 @@
 </head>
 <body>
 
-  <h1>Spotify Global Top‑10 History & Cumulative Points</h1>
+  <h1>Spotify Global Top‑10 History</h1>
 
   <div id="controls">
     <label for="date-select">Select date:</label>
@@ -75,10 +75,14 @@
             <th>Rank</th>
             <th>Song / Artist</th>
             <th>Points</th>
+            <th>Release Date</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <h3>How does this work?</h3>
+      Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won.
+      So, this system is a way to see it's popularity.
     </div>
   </div>
 
@@ -122,7 +126,8 @@
             columns: [
               { title: "Rank" },
               { title: "Song / Artist" },
-              { title: "Points" }
+              { title: "Points" },
+              { title: "Release Date" }
             ],
             pageLength: 10,
             lengthChange: false,
