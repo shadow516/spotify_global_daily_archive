@@ -75,13 +75,13 @@
         grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
         gap: 4rem;
         width: 100%;
-        max-width: 1400px;
+        max-width: 1600px; /* Aumentado para más espacio */
         margin: 0 auto;
     }
 
     .table-wrapper {
         flex: 1;
-        min-width: 500px; /* Ensure tables don't get too small */
+        min-width: 600px; /* Aumentado para tablas más anchas */
         background-color: #181818;
         padding: 1.5rem;
         border-radius: 10px;
@@ -113,6 +113,13 @@
         font-size: 0.9rem;
         white-space: normal; /* Permitir envoltura de texto */
         word-wrap: break-word; /* Asegurar que el texto largo se divida */
+    }
+
+    #table-top10 th,
+    #table-top10 td {
+        max-width: 200px; /* Limita el ancho máximo de celdas en la primera tabla */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Puntos suspensivos para texto largo */
     }
 
     table.dataTable tbody tr:nth-child(even) {
@@ -170,7 +177,7 @@
     }
 
     /* Responsive adjustments */
-    @media (max-width: 1024px) {
+    @media (max-width: 1280px) {
         .tables-container {
             grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
             align-items: center;
