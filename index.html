@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spotify Global Top‑10 History</title>
+  <title>Spotify Global Top‑10 History & Points</title>
 
   <!-- DataTables CSS -->
   <link
@@ -14,43 +14,73 @@
     body {
       font-family: Arial, sans-serif;
       margin: 2rem;
-      max-width: 900px;
+      max-width: 1200px;
     }
     h1 {
       text-align: center;
-      margin-bottom: 1.5rem;
-    }
-    #fecha-select {
       margin-bottom: 1rem;
+    }
+    #controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+    #date-select {
       padding: 0.3rem;
       font-size: 1rem;
     }
+    .tables-container {
+      display: flex;
+      gap: 2rem;
+    }
     table.dataTable {
       width: 100% !important;
+    }
+    .table-wrapper {
+      flex: 1;
     }
   </style>
 </head>
 <body>
 
-  <h1>Spotify Global Top‑10 History</h1>
+  <h1>Spotify Global Top‑10 History & Cumulative Points</h1>
 
-  <label for="fecha-select">Select date:</label>
-  <select id="fecha-select"></select>
+  <div id="controls">
+    <label for="date-select">Select date:</label>
+    <select id="date-select"></select>
+  </div>
 
-  <table id="tabla-top10" class="display">
-    <thead>
-      <tr>
-        <th>Position</th>
-        <th>Change</th>
-        <th>Song / Artist</th>
-        <th>Streams</th>
-        <th>Stream Diff</th>
-        <th>Total</th>
-        <th>Release Date</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="tables-container">
+    <div class="table-wrapper">
+      <table id="table-top10" class="display">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Change</th>
+            <th>Song / Artist</th>
+            <th>Streams</th>
+            <th>Stream Diff</th>
+            <th>Total</th>
+            <th>Release Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrapper">
+      <table id="table-points" class="display">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Song / Artist</th>
+            <th>Points</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
   <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -61,19 +91,18 @@
       fetch('spotify_historial.json')
         .then(res => res.json())
         .then(data => {
-          const fechas = Object.keys(data).sort((a, b) => {
-            return new Date(b) - new Date(a);
+          // Sort dates descending
+          const dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+          const select = document.getElementById('date-select');
+          dates.forEach(date => {
+            const opt = document.createElement('option');
+            opt.value = date;
+            opt.textContent = date;
+            select.appendChild(opt);
           });
 
-          const select = document.getElementById('fecha-select');
-          fechas.forEach(fecha => {
-            const option = document.createElement('option');
-            option.value = fecha;
-            option.textContent = fecha;
-            select.appendChild(option);
-          });
-
-          const tabla = $('#tabla-top10').DataTable({
+          // Initialize Top10 DataTable
+          const top10Table = $('#table-top10').DataTable({
             columns: [
               { title: "Position" },
               { title: "Change" },
@@ -85,62 +114,80 @@
             ],
             pageLength: 10,
             lengthChange: false,
-            language: {
-              url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json'
-            }
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
 
-          function renderFecha(fecha) {
-            const top10 = data[fecha].top_10;
-            tabla.clear();
-            top10.forEach(item => {
-              // Ajustar -1 a 0
-              let diasDesdeLanzamiento = item["Fecha de Lanzamiento"];
-              if (diasDesdeLanzamiento === -1) {
-                diasDesdeLanzamiento = 0;
-              }
+          // Initialize Points DataTable
+          const pointsTable = $('#table-points').DataTable({
+            columns: [
+              { title: "Rank" },
+              { title: "Song / Artist" },
+              { title: "Points" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+          });
 
-              // Calcular la fecha real de lanzamiento
-              let fechaLanzamiento = '-';
-              if (diasDesdeLanzamiento !== undefined && !isNaN(diasDesdeLanzamiento)) {
-                const fechaTabla = new Date(fecha);
-                fechaTabla.setDate(fechaTabla.getDate() - parseInt(diasDesdeLanzamiento));
-                const año = fechaTabla.getFullYear();
-                const mes = String(fechaTabla.getMonth() + 1).padStart(2, '0');
-                const dia = String(fechaTabla.getDate()).padStart(2, '0');
-                fechaLanzamiento = `${año}/${mes}/${dia}`;
-              }
+          // Compute cumulative Eurovision-style points
+          const pointsMap = {};
+          dates.forEach(date => {
+            data[date].top_10.forEach(item => {
+              const key = item["Song / Artist"] || item["Canción / Artista"];
+              const pos = item.Posición;
+              let pts = 0;
+              if (pos === 1) pts = 12;
+              else if (pos === 2) pts = 10;
+              else if (pos === 3) pts = 8;
+              else if (pos >= 4 && pos <= 10) pts = 11 - pos; // 4->7,5->6,...10->1
+              if (!pointsMap[key]) pointsMap[key] = { song: key, points: 0 };
+              pointsMap[key].points += pts;
+            });
+          });
 
-              tabla.row.add([
+          const pointsArray = Object.values(pointsMap)
+            .sort((a, b) => b.points - a.points)
+            .map((item, idx) => ({ rank: idx + 1, song: item.song, points: item.points }));
+
+          pointsArray.forEach(item => {
+            pointsTable.row.add([item.rank, item.song, item.points]);
+          });
+          pointsTable.draw();
+
+          // Render Top10 for selected date
+          function renderDate(date) {
+            top10Table.clear();
+            data[date].top_10.forEach(item => {
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = `${y}/${m}/${da}`;
+              }
+              top10Table.row.add([
                 item.Posición ?? '-',
                 item.Cambio ?? '-',
-                item["Canción / Artista"] ?? '-',
+                item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
                 item.Streams ?? '-',
                 item["Stream Diff"] ?? '-',
                 item.Total ?? '-',
-                fechaLanzamiento
+                releaseDate
               ]);
             });
-            tabla.draw();
+            top10Table.draw();
           }
 
-          select.addEventListener('change', () => {
-            renderFecha(select.value);
-          });
-
-          if (fechas.length) {
-            renderFecha(fechas[0]);
-          }
+          select.addEventListener('change', () => renderDate(select.value));
+          if (dates.length) renderDate(dates[0]);
         })
-        .catch(err => {
-          console.error('Error loading JSON:', err);
-          alert('Could not load history data. Is spotify_historial.json in the same directory?');
-        });
+        .catch(err => console.error('Error loading JSON:', err));
     });
   </script>
-
-</body>
-</html>
 
 </body>
 </html>
