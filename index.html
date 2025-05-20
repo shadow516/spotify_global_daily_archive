@@ -128,33 +128,26 @@
             lengthChange: false,
             language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
-
-          // Compute cumulative Eurovision-style points
+          
           const pointsMap = {};
           
           dates.forEach(date => {
             data[date].top_10.forEach(item => {
-              // Normaliza el nombre/canción/artista para evitar duplicados por minúsculas/mayúsculas o espacios
-              const key = (item["Song / Artist"] || item["Canción / Artista"] || "").trim().toLowerCase();
-              const pos = item.Posición;
+              const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
+              const key = songName.trim().toLowerCase();
+              if (!key) return; // Saltar si no hay nombre
+          
+              const pos = Number(item.Posición || item.Position);
+              if (!Number.isInteger(pos) || pos < 1 || pos > 10) return; // Solo posiciones 1-10
+          
               let pts = 0;
-              // Solo cuenta si la posición está en el top 10 (1-10)
-              if (pos >= 1 && pos <= 10) {
-                switch (pos) {
-                  case 1: pts = 12; break;
-                  case 2: pts = 10; break;
-                  case 3: pts = 8; break;
-                  case 4: pts = 7; break;
-                  case 5: pts = 6; break;
-                  case 6: pts = 5; break;
-                  case 7: pts = 4; break;
-                  case 8: pts = 3; break;
-                  case 9: pts = 2; break;
-                  case 10: pts = 1; break;
-                }
-                if (!pointsMap[key]) pointsMap[key] = { song: item["Song / Artist"] || item["Canción / Artista"], points: 0 };
-                pointsMap[key].points += pts;
-              }
+              if (pos === 1) pts = 12;
+              else if (pos === 2) pts = 10;
+              else if (pos === 3) pts = 8;
+              else if (pos >= 4 && pos <= 10) pts = 11 - pos;
+          
+              if (!pointsMap[key]) pointsMap[key] = { song: songName, points: 0 };
+              pointsMap[key].points += pts;
             });
           });
 
