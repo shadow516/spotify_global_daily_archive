@@ -3,54 +3,282 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Spotify Global Top‑10 History</title>
+  <title>Spotify Global Top‑10 History & Points</title>
 
   <!-- DataTables CSS -->
-  <link
-    rel="stylesheet"
-    href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
-  >
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+    .dataTables_filter input {
+          padding: 0.7rem 1.2rem;
+          font-size: 1rem;
+          border-radius: 5px;
+          border: 1px solid #333;
+          background-color: #282828;
+          color: #ffffff; /* Texto blanco para lo que se escribe */
+          transition: border-color 0.3s ease;
+      }
+      
+      .dataTables_filter input::placeholder {
+          color: #b3b3b3; /* Color del placeholder para que sea legible */
+      }
+      
+      .dataTables_filter input:hover,
+      .dataTables_filter input:focus {
+          border-color: #1DB954; /* Borde verde de Spotify al interactuar */
+          outline: none;
+      }
+      
+      .dataTables_filter label {
+          color: #b3b3b3; /* Color del texto "Search:" */
+          font-size: 1.1rem;
+      }
     body {
-      font-family: Arial, sans-serif;
-      margin: 2rem;
-      max-width: 900px;
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 2rem;
+        background-color: #121212; /* Dark background inspired by Spotify */
+        color: #e0e0e0; /* Light grey text */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
     }
+
     h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #1DB954; /* Spotify green for the title */
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -1px;
+        text-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
     }
-    #fecha-select {
-      margin-bottom: 1rem;
-      padding: 0.3rem;
-      font-size: 1rem;
+
+    #controls {
+        display: flex;
+        justify-content: center; /* Center controls */
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background-color: #181818;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
+
+    #controls label {
+        font-size: 1.1rem;
+        margin-right: 1rem;
+        color: #b3b3b3;
+    }
+
+    #date-select {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #333;
+        background-color: #282828;
+        color: #e0e0e0;
+        appearance: none; /* Remove default select arrow */
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2C197.399L146.2%2C56.6L5.4%2C197.399h281.6z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+        background-repeat: no-repeat;
+        background-position: right 0.7em top 50%, 0 0;
+        background-size: 0.65em auto, 100%;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+    }
+
+    #date-select:hover {
+        border-color: #1DB954;
+    }
+
+    .tables-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
+        gap: 4rem;
+        width: 100%;
+        max-width: 1700px;
+        margin: 0 auto;
+    }
+
+    .table-wrapper {
+        flex: 1;
+        min-width: 700px; /* Aumentado para tablas más anchas */
+        background-color: #181818;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+    }
+
     table.dataTable {
-      width: 100% !important;
+        width: 100% !important;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    table.dataTable thead th {
+        background-color: #282828;
+        color: #1DB954; /* Spotify green for table headers */
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 2px solid #1DB954;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    table.dataTable tbody td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #333;
+        color: #e0e0e0;
+        font-size: 0.9rem;
+        white-space: normal; /* Permitir envoltura de texto */
+        word-wrap: break-word; /* Asegurar que el texto largo se divida */
+    }
+
+    #table-top10 th,
+    #table-top10 td {
+        max-width: 200px; /* Limita el ancho máximo de celdas en la primera tabla */
+        overflow: hidden;
+        text-overflow: ellipsis; /* Puntos suspensivos para texto largo */
+    }
+
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #1e1e1e;
+    }
+
+    table.dataTable tbody tr:hover {
+        background-color: #333333;
+        cursor: pointer;
+    }
+
+    table.dataTable.no-footer {
+        border-bottom: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        color: #e0e0e0 !important;
+        border: 1px solid #555 !important;
+        background-color: #282828 !important;
+        border-radius: 5px !important;
+        margin: 0 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background-color: #1DB954 !important;
+        color: #121212 !important;
+        border-color: #1DB954 !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #383838 !important;
+        color: #1DB954 !important;
+    }
+
+    .dataTables_info {
+        color: #b3b3b3;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+
+    h3 {
+        color: #1DB954;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .table-wrapper p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #b3b3b3;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1280px) {
+        .tables-container {
+            grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
+            align-items: center;
+        }
+        .table-wrapper {
+            min-width: unset; /* Remove min-width to allow shrinking */
+            width: 95%; /* Take more width on smaller screens */
+        }
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        #controls {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        #controls label {
+            margin-bottom: 0.5rem;
+            margin-right: 0;
+        }
+        .table-wrapper {
+            padding: 1rem;
+        }
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            padding: 8px 10px;
+            font-size: 0.85rem;
+        }
     }
   </style>
 </head>
 <body>
-
   <h1>Spotify Global Top‑10 History</h1>
 
-  <label for="fecha-select">Select date:</label>
-  <select id="fecha-select"></select>
+  <div id="controls">
+    <label for="date-select">Select date:</label>
+    <select id="date-select"></select>
+  </div>
 
-  <table id="tabla-top10" class="display">
-    <thead>
-      <tr>
-        <th>Position</th>
-        <th>Change</th>
-        <th>Song / Artist</th>
-        <th>Streams</th>
-        <th>Stream Diff</th>
-        <th>Total</th>
-        <th>Release Date</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div class="tables-container">
+    <div class="table-wrapper">
+      <table id="table-top10" class="display">
+        <thead>
+          <tr>
+            <th>Position</th>
+            <th>Change</th>
+            <th>Song / Artist</th>
+            <th>Streams</th>
+            <th>Stream Diff</th>
+            <th>Total</th>
+            <th>Release Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-wrapper">
+      <table id="table-points" class="display">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Song / Artist</th>
+            <th>Points</th>
+            <th>Release Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <h3>How does this work?</h3>
+      <p>Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won. So, this system is a way to see its popularity.</p>
+    </div>
+  </div>
 
   <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -61,19 +289,19 @@
       fetch('spotify_historial.json')
         .then(res => res.json())
         .then(data => {
-          const fechas = Object.keys(data).sort((a, b) => {
-            return new Date(b) - new Date(a);
+          // Sort dates descending
+          const dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+          const select = document.getElementById('date-select');
+          dates.forEach(date => {
+            const opt = document.createElement('option');
+            opt.value = date;
+            opt.textContent = date;
+            select.appendChild(opt);
           });
 
-          const select = document.getElementById('fecha-select');
-          fechas.forEach(fecha => {
-            const option = document.createElement('option');
-            option.value = fecha;
-            option.textContent = fecha;
-            select.appendChild(option);
-          });
-
-          const tabla = $('#tabla-top10').DataTable({
+          // Initialize Top10 DataTable
+          const top10Table = $('#table-top10').DataTable({
+            autoWidth: false, // Desactivar ajuste automático de ancho
             columns: [
               { title: "Position" },
               { title: "Change" },
@@ -85,62 +313,109 @@
             ],
             pageLength: 10,
             lengthChange: false,
-            language: {
-              url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json'
-            }
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
 
-          function renderFecha(fecha) {
-            const top10 = data[fecha].top_10;
-            tabla.clear();
-            top10.forEach(item => {
-              // Ajustar -1 a 0
-              let diasDesdeLanzamiento = item["Fecha de Lanzamiento"];
-              if (diasDesdeLanzamiento === -1) {
-                diasDesdeLanzamiento = 0;
+          // Initialize Points DataTable
+          const pointsTable = $('#table-points').DataTable({
+            autoWidth: false, // Desactivar ajuste automático de ancho
+            columns: [
+              { title: "Rank" },
+              { title: "Song / Artist" },
+              { title: "Points" },
+              { title: "Release Date" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+          });
+
+          const pointsMap = {};
+
+          dates.forEach(date => {
+            data[date].top_10.forEach(item => {
+              const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
+              const key = songName.trim().toLowerCase();
+              if (!key) return;
+
+              const pos = Number(item.Posición || item.Position);
+              if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
+
+              let pts = 0;
+              if (pos === 1) pts = 12;
+              else if (pos === 2) pts = 10;
+              else if (pos === 3) pts = 8;
+              else if (pos >= 4 && pos <= 10) pts = 11 - pos;
+
+              // CALCULA LA FECHA DE LANZAMIENTO
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = `${y}/${m}/${da}`;
               }
 
-              // Calcular la fecha real de lanzamiento
-              let fechaLanzamiento = '-';
-              if (diasDesdeLanzamiento !== undefined && !isNaN(diasDesdeLanzamiento)) {
-                const fechaTabla = new Date(fecha);
-                fechaTabla.setDate(fechaTabla.getDate() - parseInt(diasDesdeLanzamiento));
-                const año = fechaTabla.getFullYear();
-                const mes = String(fechaTabla.getMonth() + 1).padStart(2, '0');
-                const dia = String(fechaTabla.getDate()).padStart(2, '0');
-                fechaLanzamiento = `${año}/${mes}/${dia}`;
+              // Guarda la fecha de lanzamiento si todavía no la tenías
+              if (!pointsMap[key]) {
+                pointsMap[key] = { song: songName, points: 0, releaseDate };
               }
 
-              tabla.row.add([
+              pointsMap[key].points += pts;
+            });
+          });
+
+          const pointsArray = Object.values(pointsMap)
+            .sort((a, b) => b.points - a.points)
+            .map((item, idx) => ({
+              rank: idx + 1,
+              song: item.song,
+              points: item.points,
+              releaseDate: item.releaseDate
+            }));
+
+          pointsArray.forEach(item => {
+            pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
+          });
+          pointsTable.draw();
+
+          // Render Top10 for selected date
+          function renderDate(date) {
+            top10Table.clear();
+            data[date].top_10.forEach(item => {
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = `${y}/${m}/${da}`;
+              }
+              top10Table.row.add([
                 item.Posición ?? '-',
                 item.Cambio ?? '-',
-                item["Canción / Artista"] ?? '-',
+                item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
                 item.Streams ?? '-',
                 item["Stream Diff"] ?? '-',
                 item.Total ?? '-',
-                fechaLanzamiento
+                releaseDate
               ]);
             });
-            tabla.draw();
+            top10Table.draw();
           }
 
-          select.addEventListener('change', () => {
-            renderFecha(select.value);
-          });
-
-          if (fechas.length) {
-            renderFecha(fechas[0]);
-          }
+          select.addEventListener('change', () => renderDate(select.value));
+          if (dates.length) renderDate(dates[0]);
         })
-        .catch(err => {
-          console.error('Error loading JSON:', err);
-          alert('Could not load history data. Is spotify_historial.json in the same directory?');
-        });
+        .catch(err => console.error('Error loading JSON:', err));
     });
   </script>
-
-</body>
-</html>
-
 </body>
 </html>
