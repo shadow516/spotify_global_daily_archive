@@ -140,10 +140,10 @@
             data[date].top_10.forEach(item => {
               const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
               const key = songName.trim().toLowerCase();
-              if (!key) return; // Saltar si no hay nombre
+              if (!key) return;
           
               const pos = Number(item.Posición || item.Position);
-              if (!Number.isInteger(pos) || pos < 1 || pos > 10) return; // Solo posiciones 1-10
+              if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
           
               let pts = 0;
               if (pos === 1) pts = 12;
@@ -151,17 +151,39 @@
               else if (pos === 3) pts = 8;
               else if (pos >= 4 && pos <= 10) pts = 11 - pos;
           
-              if (!pointsMap[key]) pointsMap[key] = { song: songName, points: 0 };
+              // CALCULA LA FECHA DE LANZAMIENTO
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = `${y}/${m}/${da}`;
+              }
+          
+              // Guarda la fecha de lanzamiento si todavía no la tenías
+              if (!pointsMap[key]) {
+                pointsMap[key] = { song: songName, points: 0, releaseDate };
+              }
+          
               pointsMap[key].points += pts;
             });
           });
 
           const pointsArray = Object.values(pointsMap)
             .sort((a, b) => b.points - a.points)
-            .map((item, idx) => ({ rank: idx + 1, song: item.song, points: item.points }));
+            .map((item, idx) => ({
+              rank: idx + 1,
+              song: item.song,
+              points: item.points,
+              releaseDate: item.releaseDate // <- agrega esto
+            }));
           
           pointsArray.forEach(item => {
-            pointsTable.row.add([item.rank, item.song, item.points]);
+            pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
           });
           pointsTable.draw();
 
