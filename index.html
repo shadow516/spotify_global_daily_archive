@@ -131,24 +131,37 @@
 
           // Compute cumulative Eurovision-style points
           const pointsMap = {};
+          
           dates.forEach(date => {
             data[date].top_10.forEach(item => {
-              const key = item["Song / Artist"] || item["Canción / Artista"];
+              // Normaliza el nombre/canción/artista para evitar duplicados por minúsculas/mayúsculas o espacios
+              const key = (item["Song / Artist"] || item["Canción / Artista"] || "").trim().toLowerCase();
               const pos = item.Posición;
               let pts = 0;
-              if (pos === 1) pts = 12;
-              else if (pos === 2) pts = 10;
-              else if (pos === 3) pts = 8;
-              else if (pos >= 4 && pos <= 10) pts = 11 - pos; // 4->7,5->6,...10->1
-              if (!pointsMap[key]) pointsMap[key] = { song: key, points: 0 };
-              pointsMap[key].points += pts;
+              // Solo cuenta si la posición está en el top 10 (1-10)
+              if (pos >= 1 && pos <= 10) {
+                switch (pos) {
+                  case 1: pts = 12; break;
+                  case 2: pts = 10; break;
+                  case 3: pts = 8; break;
+                  case 4: pts = 7; break;
+                  case 5: pts = 6; break;
+                  case 6: pts = 5; break;
+                  case 7: pts = 4; break;
+                  case 8: pts = 3; break;
+                  case 9: pts = 2; break;
+                  case 10: pts = 1; break;
+                }
+                if (!pointsMap[key]) pointsMap[key] = { song: item["Song / Artist"] || item["Canción / Artista"], points: 0 };
+                pointsMap[key].points += pts;
+              }
             });
           });
 
           const pointsArray = Object.values(pointsMap)
             .sort((a, b) => b.points - a.points)
             .map((item, idx) => ({ rank: idx + 1, song: item.song, points: item.points }));
-
+          
           pointsArray.forEach(item => {
             pointsTable.row.add([item.rank, item.song, item.points]);
           });
