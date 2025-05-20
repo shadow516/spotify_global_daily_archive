@@ -1,5 +1,201 @@
 <!DOCTYPE html>
 <html lang="en">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 2rem;
+        background-color: #121212; /* Dark background inspired by Spotify */
+        color: #e0e0e0; /* Light grey text */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+
+    h1 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #1DB954; /* Spotify green for the title */
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -1px;
+        text-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+    }
+
+    #controls {
+        display: flex;
+        justify-content: center; /* Center controls */
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding: 1.5rem;
+        background-color: #181818;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    #controls label {
+        font-size: 1.1rem;
+        margin-right: 1rem;
+        color: #b3b3b3;
+    }
+
+    #date-select {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #333;
+        background-color: #282828;
+        color: #e0e0e0;
+        appearance: none; /* Remove default select arrow */
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2C197.399L146.2%2C56.6L5.4%2C197.399h281.6z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+        background-repeat: no-repeat;
+        background-position: right 0.7em top 50%, 0 0;
+        background-size: 0.65em auto, 100%;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+    }
+
+    #date-select:hover {
+        border-color: #1DB954;
+    }
+
+    .tables-container {
+        display: flex;
+        flex-wrap: wrap; /* Allow wrapping on smaller screens */
+        gap: 2.5rem;
+        width: 100%;
+        max-width: 1300px; /* Increased max-width for better table display */
+        justify-content: center; /* Center tables when wrapped */
+    }
+
+    .table-wrapper {
+        flex: 1;
+        min-width: 450px; /* Ensure tables don't get too small */
+        background-color: #181818;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+    }
+
+    table.dataTable {
+        width: 100% !important;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    table.dataTable thead th {
+        background-color: #282828;
+        color: #1DB954; /* Spotify green for table headers */
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 2px solid #1DB954;
+        font-weight: 600;
+        font-size: 0.95rem;
+    }
+
+    table.dataTable tbody td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #333;
+        color: #e0e0e0;
+        font-size: 0.9rem;
+    }
+
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #1e1e1e;
+    }
+
+    table.dataTable tbody tr:hover {
+        background-color: #333333;
+        cursor: pointer;
+    }
+
+    table.dataTable.no-footer {
+        border-bottom: none;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        color: #e0e0e0 !important;
+        border: 1px solid #555 !important;
+        background-color: #282828 !important;
+        border-radius: 5px !important;
+        margin: 0 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background-color: #1DB954 !important;
+        color: #121212 !important;
+        border-color: #1DB954 !important;
+    }
+
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #383838 !important;
+        color: #1DB954 !important;
+    }
+
+    .dataTables_info {
+        color: #b3b3b3;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+
+    h3 {
+        color: #1DB954;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+
+    .table-wrapper p { /* Styling for the "How does this work?" text */
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #b3b3b3;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1024px) {
+        .tables-container {
+            flex-direction: column;
+            align-items: center;
+        }
+        .table-wrapper {
+            min-width: unset; /* Remove min-width to allow shrinking */
+            width: 95%; /* Take more width on smaller screens */
+        }
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        #controls {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        #controls label {
+            margin-bottom: 0.5rem;
+            margin-right: 0;
+        }
+        .table-wrapper {
+            padding: 1rem;
+        }
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            padding: 8px 10px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
