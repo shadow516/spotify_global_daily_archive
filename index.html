@@ -4,108 +4,77 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Spotify Global Top‑10 History & Points</title>
-
-  <!-- DataTables CSS -->
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-
-    .dataTables_filter input {
-          padding: 0.7rem 1.2rem;
-          font-size: 1rem;
-          border-radius: 5px;
-          border: 1px solid #333;
-          background-color: #282828;
-          color: #ffffff; /* Texto blanco para lo que se escribe */
-          transition: border-color 0.3s ease;
-      }
-      
-      .dataTables_filter input::placeholder {
-          color: #b3b3b3; /* Color del placeholder para que sea legible */
-      }
-      
-      .dataTables_filter input:hover,
-      .dataTables_filter input:focus {
-          border-color: #1DB954; /* Borde verde de Spotify al interactuar */
-          outline: none;
-      }
-      
-      .dataTables_filter label {
-          color: #b3b3b3; /* Color del texto "Search:" */
-          font-size: 1.1rem;
-      }
     body {
         font-family: 'Poppins', sans-serif;
         margin: 0;
         padding: 2rem;
-        background-color: #121212; /* Dark background inspired by Spotify */
-        color: #e0e0e0; /* Light grey text */
+        background-color: #121212;
+        color: #e0e0e0;
         display: flex;
         flex-direction: column;
         align-items: center;
         min-height: 100vh;
     }
-
     h1 {
         text-align: center;
         margin-bottom: 2rem;
-        color: #1DB954; /* Spotify green for the title */
+        color: #1DB954;
         font-size: 2.8rem;
         font-weight: 700;
         letter-spacing: -1px;
         text-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
     }
-
-    #controls {
+    #controls, #monthly-controls {
         display: flex;
-        justify-content: center; /* Center controls */
+        justify-content: center;
         align-items: center;
-        margin-bottom: 2.5rem;
+        margin-bottom: 1.5rem; /* Reduced margin for monthly controls */
         padding: 1.5rem;
         background-color: #181818;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        flex-wrap: wrap; /* Allow wrapping for smaller screens */
     }
-
-    #controls label {
+    #controls label, #monthly-controls label {
         font-size: 1.1rem;
         margin-right: 1rem;
         color: #b3b3b3;
+        margin-bottom: 0.5rem; /* For wrapping */
     }
-
-    #date-select {
+    #date-select, #year-select-monthly, #month-select-monthly {
         padding: 0.7rem 1.2rem;
         font-size: 1rem;
         border-radius: 5px;
         border: 1px solid #333;
         background-color: #282828;
         color: #e0e0e0;
-        appearance: none; /* Remove default select arrow */
-        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2C197.399L146.2%2C56.6L5.4%2C197.399h281.6z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2C197.399L146.2%2C56.6L5.4%2C197.399h281.6z%22%2F%3E%3C%2Fsvg%3E');
         background-repeat: no-repeat;
         background-position: right 0.7em top 50%, 0 0;
         background-size: 0.65em auto, 100%;
         cursor: pointer;
         transition: border-color 0.3s ease;
+        margin-right: 0.5rem; /* Spacing between selects */
+        margin-bottom: 0.5rem; /* For wrapping */
     }
-
-    #date-select:hover {
+    #date-select:hover, #year-select-monthly:hover, #month-select-monthly:hover {
         border-color: #1DB954;
     }
-
     .tables-container {
-        display: grid;
-        grid-template-columns: 1fr 1fr; /* Dos columnas de igual ancho */
-        gap: 4rem;
+        display: flex;
+        flex-direction: column;
         width: 100%;
-        max-width: 1700px;
+        max-width: 900px;
         margin: 0 auto;
+        gap: 2.5rem; /* Corrected 'rem' */
     }
-
     .table-wrapper {
         flex: 1;
-        min-width: 700px; /* Aumentado para tablas más anchas */
+        min-width: 600px;
         background-color: #181818;
         padding: 1.5rem;
         border-radius: 10px;
@@ -113,52 +82,44 @@
         display: flex;
         flex-direction: column;
     }
-
     table.dataTable {
         width: 100% !important;
         border-collapse: collapse;
         margin-top: 1rem;
     }
-
     table.dataTable thead th {
         background-color: #282828;
-        color: #1DB954; /* Spotify green for table headers */
+        color: #1DB954;
         padding: 12px 15px;
         text-align: left;
         border-bottom: 2px solid #1DB954;
         font-weight: 600;
         font-size: 0.95rem;
     }
-
     table.dataTable tbody td {
         padding: 10px 15px;
         border-bottom: 1px solid #333;
         color: #e0e0e0;
         font-size: 0.9rem;
-        white-space: normal; /* Permitir envoltura de texto */
-        word-wrap: break-word; /* Asegurar que el texto largo se divida */
+        white-space: normal;
+        word-wrap: break-word;
     }
-
     #table-top10 th,
     #table-top10 td {
-        max-width: 200px; /* Limita el ancho máximo de celdas en la primera tabla */
+        max-width: 200px;
         overflow: hidden;
-        text-overflow: ellipsis; /* Puntos suspensivos para texto largo */
+        text-overflow: ellipsis;
     }
-
     table.dataTable tbody tr:nth-child(even) {
         background-color: #1e1e1e;
     }
-
     table.dataTable tbody tr:hover {
         background-color: #333333;
         cursor: pointer;
     }
-
     table.dataTable.no-footer {
         border-bottom: none;
     }
-
     .dataTables_wrapper .dataTables_paginate .paginate_button {
         color: #e0e0e0 !important;
         border: 1px solid #555 !important;
@@ -167,25 +128,42 @@
         margin: 0 5px;
         transition: background-color 0.3s ease, color 0.3s ease;
     }
-
     .dataTables_wrapper .dataTables_paginate .paginate_button.current,
     .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
         background-color: #1DB954 !important;
         color: #121212 !important;
         border-color: #1DB954 !important;
     }
-
     .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
         background-color: #383838 !important;
         color: #1DB954 !important;
     }
-
     .dataTables_info {
         color: #b3b3b3;
         font-size: 0.9rem;
         margin-top: 1rem;
     }
-
+    .dataTables_filter input {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #333;
+        background-color: #282828;
+        color: #ffffff;
+        transition: border-color 0.3s ease;
+    }
+    .dataTables_filter input::placeholder {
+        color: #b3b3b3;
+    }
+    .dataTables_filter input:hover,
+    .dataTables_filter input:focus {
+        border-color: #1DB954;
+        outline: none;
+    }
+    .dataTables_filter label {
+        color: #b3b3b3;
+        font-size: 1.1rem;
+    }
     h3 {
         color: #1DB954;
         margin-top: 1.5rem;
@@ -193,25 +171,21 @@
         font-size: 1.4rem;
         font-weight: 600;
     }
-
     .table-wrapper p {
         font-size: 0.9rem;
         line-height: 1.6;
         color: #b3b3b3;
     }
-
-    /* Responsive adjustments */
     @media (max-width: 1280px) {
         .tables-container {
-            grid-template-columns: 1fr; /* Una columna en pantallas más pequeñas */
+            /* grid-template-columns: 1fr; */ /* This was for grid, not needed for flex column */
             align-items: center;
         }
         .table-wrapper {
-            min-width: unset; /* Remove min-width to allow shrinking */
-            width: 95%; /* Take more width on smaller screens */
+            min-width: unset;
+            width: 95%;
         }
     }
-
     @media (max-width: 600px) {
         body {
             padding: 1rem;
@@ -219,11 +193,11 @@
         h1 {
             font-size: 2rem;
         }
-        #controls {
+        #controls, #monthly-controls {
             flex-direction: column;
             padding: 1rem;
         }
-        #controls label {
+        #controls label, #monthly-controls label {
             margin-bottom: 0.5rem;
             margin-right: 0;
         }
@@ -240,14 +214,15 @@
 </head>
 <body>
   <h1>Spotify Global Top‑10 History</h1>
-
+  
   <div id="controls">
-    <label for="date-select">Select date:</label>
+    <label for="date-select">Select date for Top 10:</label>
     <select id="date-select"></select>
   </div>
 
   <div class="tables-container">
     <div class="table-wrapper">
+      <h3>Daily Top 10</h3>
       <table id="table-top10" class="display">
         <thead>
           <tr>
@@ -263,45 +238,83 @@
         <tbody></tbody>
       </table>
     </div>
+
     <div class="table-wrapper">
+      <h3>Overall Points Ranking</h3>
       <table id="table-points" class="display">
         <thead>
           <tr>
             <th>Rank</th>
             <th>Song / Artist</th>
-            <th>Points</th>
+            <th>Total Points</th>
             <th>Release Date</th>
           </tr>
         </thead>
         <tbody></tbody>
       </table>
-      <h3>How does this work?</h3>
+      <h4>How does this work?</h4>
       <p>Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won. So, this system is a way to see its popularity.</p>
+    </div>
+
+    <div class="table-wrapper">
+      <h3>Monthly Points Ranking</h3>
+      <div id="monthly-controls">
+        <label for="year-select-monthly">Select Year:</label>
+        <select id="year-select-monthly"></select>
+        <label for="month-select-monthly">Select Month:</label>
+        <select id="month-select-monthly"></select>
+      </div>
+      <table id="table-monthly-points" class="display">
+        <thead>
+          <tr>
+            <th>Rank</th>
+            <th>Song / Artist</th>
+            <th>Monthly Points</th>
+            <th>Release Date</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+       <h4>How does this work?</h4>
+      <p>This table shows the points accumulated by songs within the selected month and year, using the same point system as the overall ranking.</p>
+    </div>
+
+    <div class ="table-wrapper">
+      <h3>Artist Data</h3>
+      <table id="table-artist-data" class="display">
+        <thread>
+          <tr>
+            <th>Rank</th>
+            <th>Artist</th>
+            <th>Total Points</th>
+            <th>Total Songs</th>
+          </tr>
+        </thread>
+        <tbody></tbody>
+      </table>
     </div>
   </div>
 
-  <!-- jQuery + DataTables JS -->
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       fetch('spotify_historial.json')
         .then(res => res.json())
         .then(data => {
-          // Sort dates descending
           const dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
-          const select = document.getElementById('date-select');
+          const dateSelect = document.getElementById('date-select');
+          
           dates.forEach(date => {
             const opt = document.createElement('option');
             opt.value = date;
             opt.textContent = date;
-            select.appendChild(opt);
+            dateSelect.appendChild(opt);
           });
 
-          // Initialize Top10 DataTable
           const top10Table = $('#table-top10').DataTable({
-            autoWidth: false, // Desactivar ajuste automático de ancho
+            autoWidth: false,
+            searching: true,
             columns: [
               { title: "Position" },
               { title: "Change" },
@@ -316,59 +329,99 @@
             language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
 
-          // Initialize Points DataTable
           const pointsTable = $('#table-points').DataTable({
-            autoWidth: false, // Desactivar ajuste automático de ancho
+            autoWidth: false,
+            searching: true,
             columns: [
               { title: "Rank" },
               { title: "Song / Artist" },
-              { title: "Points" },
+              { title: "Total Points" },
               { title: "Release Date" }
             ],
+            order: [[ 2, "desc" ]], // Order by points descending
             pageLength: 10,
             lengthChange: false,
             language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
           });
 
-          const pointsMap = {};
+          const monthlyPointsTable = $('#table-monthly-points').DataTable({
+            autoWidth: false,
+            searching: true,
+            columns: [
+              { title: "Rank" },
+              { title: "Song / Artist" },
+              { title: "Monthly Points" },
+              { title: "Release Date" }
+            ],
+            order: [[ 2, "desc" ]], // Order by points descending
+            pageLength: 10,
+            lengthChange: false,
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+          });
 
-          dates.forEach(date => {
-            data[date].top_10.forEach(item => {
+          const pointsMap = {}; // For overall points
+          const monthlyPointsData = {}; // For monthly points: { "YYYY-MM": { songKey: {song, points, releaseDate} } }
+
+          dates.forEach(dateStr => { // Renamed 'date' to 'dateStr' to avoid conflict with Date object
+            const currentDate = new Date(dateStr);
+            const year = currentDate.getFullYear();
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 01-12
+            const yearMonthKey = `${year}-${month}`;
+
+            if (!monthlyPointsData[yearMonthKey]) {
+              monthlyPointsData[yearMonthKey] = {};
+            }
+
+            data[dateStr].top_10.forEach(item => {
               const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
               const key = songName.trim().toLowerCase();
               if (!key) return;
 
               const pos = Number(item.Posición || item.Position);
               if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
-
+              
               let pts = 0;
               if (pos === 1) pts = 12;
               else if (pos === 2) pts = 10;
               else if (pos === 3) pts = 8;
               else if (pos >= 4 && pos <= 10) pts = 11 - pos;
 
-              // CALCULA LA FECHA DE LANZAMIENTO
               let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
-              if (days === -1) days = 0;
+              if (days === -1) days = 0; // Treat -1 as 0 for calculation
+              
               let releaseDate = '-';
-              if (!isNaN(days)) {
-                const d = new Date(date);
+              if (days !== undefined && !isNaN(days)) {
+                const d = new Date(dateStr); // Use the specific date from JSON for this entry
                 d.setDate(d.getDate() - parseInt(days));
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const da = String(d.getDate()).padStart(2, '0');
-                releaseDate = `${y}/${m}/${da}`;
+                const y_r = d.getFullYear();
+                const m_r = String(d.getMonth() + 1).padStart(2, '0');
+                const da_r = String(d.getDate()).padStart(2, '0');
+                releaseDate = `${y_r}/${m_r}/${da_r}`;
               }
-
-              // Guarda la fecha de lanzamiento si todavía no la tenías
+              
+              // Overall points
               if (!pointsMap[key]) {
-                pointsMap[key] = { song: songName, points: 0, releaseDate };
+                pointsMap[key] = { song: songName, points: 0, releaseDate: releaseDate };
+              }
+              pointsMap[key].points += pts;
+              // Update release date if a more specific one is found (though typically it's fixed per song)
+              if (pointsMap[key].releaseDate === '-' && releaseDate !== '-') {
+                pointsMap[key].releaseDate = releaseDate;
               }
 
-              pointsMap[key].points += pts;
+
+              // Monthly points
+              if (!monthlyPointsData[yearMonthKey][key]) {
+                monthlyPointsData[yearMonthKey][key] = { song: songName, points: 0, releaseDate: releaseDate };
+              }
+              monthlyPointsData[yearMonthKey][key].points += pts;
+               if (monthlyPointsData[yearMonthKey][key].releaseDate === '-' && releaseDate !== '-') {
+                monthlyPointsData[yearMonthKey][key].releaseDate = releaseDate;
+              }
             });
           });
 
+          // Populate Overall Points Table
           const pointsArray = Object.values(pointsMap)
             .sort((a, b) => b.points - a.points)
             .map((item, idx) => ({
@@ -377,42 +430,122 @@
               points: item.points,
               releaseDate: item.releaseDate
             }));
-
+          
           pointsArray.forEach(item => {
             pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
           });
           pointsTable.draw();
 
-          // Render Top10 for selected date
-          function renderDate(date) {
-            top10Table.clear();
-            data[date].top_10.forEach(item => {
-              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
-              if (days === -1) days = 0;
-              let releaseDate = '-';
-              if (!isNaN(days)) {
-                const d = new Date(date);
-                d.setDate(d.getDate() - parseInt(days));
-                const y = d.getFullYear();
-                const m = String(d.getMonth() + 1).padStart(2, '0');
-                const da = String(d.getDate()).padStart(2, '0');
-                releaseDate = `${y}/${m}/${da}`;
-              }
-              top10Table.row.add([
-                item.Posición ?? '-',
-                item.Cambio ?? '-',
-                item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
-                item.Streams ?? '-',
-                item["Stream Diff"] ?? '-',
-                item.Total ?? '-',
-                releaseDate
-              ]);
+          // --- Monthly Points Table Logic ---
+          const yearSelectMonthly = document.getElementById('year-select-monthly');
+          const monthSelectMonthly = document.getElementById('month-select-monthly');
+          const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+          const availableYearMonths = Object.keys(monthlyPointsData).sort((a,b) => b.localeCompare(a)); // Sort newest first "YYYY-MM"
+
+          const uniqueYears = [...new Set(availableYearMonths.map(ym => ym.split('-')[0]))];
+          uniqueYears.forEach(year => {
+            const opt = document.createElement('option');
+            opt.value = year;
+            opt.textContent = year;
+            yearSelectMonthly.appendChild(opt);
+          });
+
+          function populateMonthSelector(selectedYear) {
+            monthSelectMonthly.innerHTML = ''; // Clear previous months
+            const monthsForYear = [...new Set(availableYearMonths
+              .filter(ym => ym.startsWith(selectedYear + '-'))
+              .map(ym => ym.split('-')[1])
+            )].sort((a,b) => b.localeCompare(a)); // Sort months numerically (e.g., 12, 11, ..., 01)
+
+            monthsForYear.forEach(monthNumStr => {
+              const opt = document.createElement('option');
+              opt.value = monthNumStr; // e.g., "01", "12"
+              opt.textContent = monthNames[parseInt(monthNumStr) - 1]; // Display month name
+              monthSelectMonthly.appendChild(opt);
             });
-            top10Table.draw();
+          }
+          
+          function renderMonthlyTable(year, month) {
+            monthlyPointsTable.clear();
+            const yearMonthKey = `${year}-${month}`;
+            if (monthlyPointsData[yearMonthKey]) {
+              const monthDataArray = Object.values(monthlyPointsData[yearMonthKey])
+                .sort((a, b) => b.points - a.points)
+                .map((item, idx) => ({
+                  rank: idx + 1,
+                  song: item.song,
+                  points: item.points,
+                  releaseDate: item.releaseDate
+                }));
+              
+              monthDataArray.forEach(item => {
+                monthlyPointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
+              });
+            }
+            monthlyPointsTable.draw();
           }
 
-          select.addEventListener('change', () => renderDate(select.value));
-          if (dates.length) renderDate(dates[0]);
+          yearSelectMonthly.addEventListener('change', () => {
+            populateMonthSelector(yearSelectMonthly.value);
+            if (monthSelectMonthly.options.length > 0) {
+              monthSelectMonthly.value = monthSelectMonthly.options[0].value; // Select first available month
+              renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
+            } else {
+              monthlyPointsTable.clear().draw(); // No months for this year, clear table
+            }
+          });
+
+          monthSelectMonthly.addEventListener('change', () => {
+            renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
+          });
+
+          // Initial population for monthly selectors and table
+          if (uniqueYears.length > 0) {
+            yearSelectMonthly.value = uniqueYears[0]; // Select newest year by default
+            populateMonthSelector(uniqueYears[0]);
+            if (monthSelectMonthly.options.length > 0) {
+              monthSelectMonthly.value = monthSelectMonthly.options[0].value; // Select newest month by default
+              renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
+            }
+          }
+          // --- End Monthly Points Table Logic ---
+
+
+          function renderDateTop10(date) { // Renamed to avoid conflict
+            top10Table.clear();
+            if (data[date] && data[date].top_10) {
+              data[date].top_10.forEach(item => {
+                let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+                if (days === -1) days = 0;
+                
+                let releaseDate = '-';
+                 if (days !== undefined && !isNaN(days)) {
+                  const d = new Date(date);
+                  d.setDate(d.getDate() - parseInt(days));
+                  const y = d.getFullYear();
+                  const m = String(d.getMonth() + 1).padStart(2, '0');
+                  const da = String(d.getDate()).padStart(2, '0');
+                  releaseDate = `${y}/${m}/${da}`;
+                }
+
+                top10Table.row.add([
+                  item.Posición ?? '-',
+                  item.Cambio ?? '-',
+                  item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
+                  item.Streams ?? '-',
+                  item["Stream Diff"] ?? '-',
+                  item.Total ?? '-',
+                  releaseDate
+                ]);
+              });
+            }
+            top10Table.draw();
+          }
+          
+          dateSelect.addEventListener('change', () => renderDateTop10(dateSelect.value));
+          if (dates.length) renderDateTop10(dates[0]); // Render initial Top 10 for the latest date
+
         })
         .catch(err => console.error('Error loading JSON:', err));
     });
