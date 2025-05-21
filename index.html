@@ -402,9 +402,7 @@
             language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' },
             responsive: true // Good for tables that might get wide
           };
-
-          const top10Table = $('#table-top10').DataTable({ ...commonTableOptions, columns: [ /*...*/] });
-          // (Existing column definitions for top10Table)
+          
           const top10Table = $('#table-top10').DataTable({
               ...commonTableOptions,
               columns: [
