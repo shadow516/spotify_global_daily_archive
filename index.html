@@ -31,18 +31,18 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-bottom: 1.5rem; /* Reduced margin for monthly controls */
+        margin-bottom: 1.5rem;
         padding: 1.5rem;
         background-color: #181818;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-        flex-wrap: wrap; /* Allow wrapping for smaller screens */
+        flex-wrap: wrap;
     }
     #controls label, #monthly-controls label {
         font-size: 1.1rem;
         margin-right: 1rem;
         color: #b3b3b3;
-        margin-bottom: 0.5rem; /* For wrapping */
+        margin-bottom: 0.5rem;
     }
     #date-select, #year-select-monthly, #month-select-monthly {
         padding: 0.7rem 1.2rem;
@@ -58,8 +58,8 @@
         background-size: 0.65em auto, 100%;
         cursor: pointer;
         transition: border-color 0.3s ease;
-        margin-right: 0.5rem; /* Spacing between selects */
-        margin-bottom: 0.5rem; /* For wrapping */
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
     }
     #date-select:hover, #year-select-monthly:hover, #month-select-monthly:hover {
         border-color: #1DB954;
@@ -68,13 +68,13 @@
         display: flex;
         flex-direction: column;
         width: 100%;
-        max-width: 900px;
+        max-width: 900px; /* Adjusted for potentially wider artist song table */
         margin: 0 auto;
-        gap: 2.5rem; /* Corrected 'rem' */
+        gap: 2.5rem;
     }
     .table-wrapper {
         flex: 1;
-        min-width: 600px;
+        /* min-width: 600px; */ /* Commented out to allow flexibility */
         background-color: #181818;
         padding: 1.5rem;
         border-radius: 10px;
@@ -94,13 +94,13 @@
         text-align: left;
         border-bottom: 2px solid #1DB954;
         font-weight: 600;
-        font-size: 0.95rem;
+        font-size: 0.90rem; /* Slightly smaller for more columns */
     }
     table.dataTable tbody td {
         padding: 10px 15px;
         border-bottom: 1px solid #333;
         color: #e0e0e0;
-        font-size: 0.9rem;
+        font-size: 0.85rem; /* Slightly smaller */
         white-space: normal;
         word-wrap: break-word;
     }
@@ -171,14 +171,36 @@
         font-size: 1.4rem;
         font-weight: 600;
     }
+     h4 {
+        color: #b3b3b3; /* Sub-heading for explanation or artist summary */
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
     .table-wrapper p {
         font-size: 0.9rem;
         line-height: 1.6;
         color: #b3b3b3;
     }
+    .spotify-button { /* For Back button */
+        background-color: #1DB954;
+        color: #FFFFFF;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+    }
+    .spotify-button:hover {
+        background-color: #1AA34A;
+    }
+
     @media (max-width: 1280px) {
         .tables-container {
-            /* grid-template-columns: 1fr; */ /* This was for grid, not needed for flex column */
             align-items: center;
         }
         .table-wrapper {
@@ -207,7 +229,7 @@
         table.dataTable thead th,
         table.dataTable tbody td {
             padding: 8px 10px;
-            font-size: 0.85rem;
+            font-size: 0.8rem; /* Adjusted for smaller screens */
         }
     }
   </style>
@@ -253,7 +275,7 @@
         <tbody></tbody>
       </table>
       <h4>How does this work?</h4>
-      <p>Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. And here you'll see the total points it won. So, this system is a way to see its popularity.</p>
+      <p>Each day, each song of the top 10 wins points. 1st -> 12 pts, 2nd -> 10pts, 3rd -> 8 pts, 4th -> 7 pts,... 10th -> 1 pt. This table shows the total accumulated points.</p>
     </div>
 
     <div class="table-wrapper">
@@ -276,29 +298,88 @@
         <tbody></tbody>
       </table>
        <h4>How does this work?</h4>
-      <p>This table shows the points accumulated by songs within the selected month and year, using the same point system as the overall ranking.</p>
+      <p>This table shows points accumulated within the selected month and year.</p>
     </div>
 
-    <div class ="table-wrapper">
-      <h3>Artist Data</h3>
-      <table id="table-artist-data" class="display">
-        <thread>
-          <tr>
-            <th>Rank</th>
-            <th>Artist</th>
-            <th>Total Points</th>
-            <th>Total Songs</th>
-          </tr>
-        </thread>
-        <tbody></tbody>
-      </table>
+    <div class="table-wrapper" id="artist-section-wrapper">
+      <div id="artist-list-container">
+        <h3>Artists Ranking</h3>
+        <p>Click on an artist to see their detailed song statistics in the Top 10.</p>
+        <table id="table-artists" class="display responsive nowrap">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Artist</th>
+              <th>Total Points (All Songs)</th>
+              <th>Unique Songs in Top 10</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div id="artist-detail-container" style="display: none;">
+        <button id="back-to-artist-list" class="spotify-button">← Back to Artist List</button>
+        <h3 id="artist-detail-name">Artist Details</h3>
+        <h4 id="artist-summary-stats-title">Summary</h4>
+        <p id="artist-summary-stats"></p>
+        <h4>Songs in Top 10</h4>
+        <table id="table-artist-songs" class="display responsive nowrap">
+          <thead>
+            <tr>
+              <th>Rank (Artist's Songs)</th>
+              <th>Song Title</th>
+              <th>Total Points</th>
+              <th>Peak Position</th>
+              <th>Days in Top 10</th>
+              <th>Release Date</th>
+              <th>First Seen</th>
+              <th>Last Seen</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
+
   </div>
 
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+
+      // --- Helper Functions ---
+      function parseSongArtist(songArtistString) {
+          if (!songArtistString) return { artist: 'Unknown', song: 'Unknown' };
+          const parts = songArtistString.split(' - ');
+          if (parts.length > 1) {
+              const artist = parts.shift().trim();
+              const song = parts.join(' - ').trim();
+              return { artist, song };
+          }
+          // If no " - ", assume it's a song title by an Unknown artist, or an artist name if it's contextually an artist list
+          // For this dataset, "Artist - Song" is fairly standard.
+          return { artist: 'Unknown', song: songArtistString.trim() };
+      }
+
+      function calculateReleaseDate(baseDateStr, daysOffset) {
+          let days = daysOffset;
+          if (days === undefined || days === null || isNaN(days)) return '-';
+          if (days === -1) days = 0; // As per existing logic
+
+          try {
+            const d = new Date(baseDateStr);
+            d.setDate(d.getDate() - parseInt(days));
+            const y = d.getFullYear();
+            const m = String(d.getMonth() + 1).padStart(2, '0');
+            const da = String(d.getDate()).padStart(2, '0');
+            return `${y}/${m}/${da}`;
+          } catch (e) {
+            console.warn("Error calculating release date for:", baseDateStr, daysOffset, e);
+            return '-';
+          }
+      }
+
       fetch('spotify_historial.json')
         .then(res => res.json())
         .then(data => {
@@ -312,60 +393,68 @@
             dateSelect.appendChild(opt);
           });
 
-          const top10Table = $('#table-top10').DataTable({
+          // --- Initialize DataTables ---
+          const commonTableOptions = {
             autoWidth: false,
             searching: true,
-            columns: [
-              { title: "Position" },
-              { title: "Change" },
-              { title: "Song / Artist" },
-              { title: "Streams" },
-              { title: "Stream Diff" },
-              { title: "Total" },
-              { title: "Release Date" }
-            ],
             pageLength: 10,
             lengthChange: false,
-            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
-          });
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' },
+            responsive: true // Good for tables that might get wide
+          };
+
+          const top10Table = $('#table-top10').DataTable({ ...commonTableOptions, columns: [ /*...*/] });
+          // (Existing column definitions for top10Table)
+          top10Table.settings()[0].aoColumns = [
+              { title: "Position" }, { title: "Change" }, { title: "Song / Artist" },
+              { title: "Streams" }, { title: "Stream Diff" }, { title: "Total" }, { title: "Release Date" }
+          ];
+
 
           const pointsTable = $('#table-points').DataTable({
-            autoWidth: false,
-            searching: true,
-            columns: [
-              { title: "Rank" },
-              { title: "Song / Artist" },
-              { title: "Total Points" },
-              { title: "Release Date" }
+             ...commonTableOptions,
+             columns: [
+              { title: "Rank" }, { title: "Song / Artist" }, { title: "Total Points" }, { title: "Release Date" }
             ],
-            order: [[ 2, "desc" ]], // Order by points descending
-            pageLength: 10,
-            lengthChange: false,
-            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+            order: [[ 2, "desc" ]]
           });
 
           const monthlyPointsTable = $('#table-monthly-points').DataTable({
-            autoWidth: false,
-            searching: true,
+            ...commonTableOptions,
             columns: [
-              { title: "Rank" },
-              { title: "Song / Artist" },
-              { title: "Monthly Points" },
-              { title: "Release Date" }
+              { title: "Rank" }, { title: "Song / Artist" }, { title: "Monthly Points" }, { title: "Release Date" }
             ],
-            order: [[ 2, "desc" ]], // Order by points descending
-            pageLength: 10,
-            lengthChange: false,
-            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+            order: [[ 2, "desc" ]]
           });
 
-          const pointsMap = {}; // For overall points
-          const monthlyPointsData = {}; // For monthly points: { "YYYY-MM": { songKey: {song, points, releaseDate} } }
+          const artistsTable = $('#table-artists').DataTable({
+            ...commonTableOptions,
+            columns: [
+              { title: "Rank", width: "10%" }, { title: "Artist" }, { title: "Total Points (All Songs)"}, { title: "Unique Songs in Top 10"}
+            ],
+            order: [[2, "desc"]]
+          });
 
-          dates.forEach(dateStr => { // Renamed 'date' to 'dateStr' to avoid conflict with Date object
+          const artistSongsTable = $('#table-artist-songs').DataTable({
+            ...commonTableOptions,
+            columns: [
+                { title: "Rank", width: "5%" }, { title: "Song Title" }, { title: "Total Points"},
+                { title: "Peak Position"}, { title: "Days in Top 10"}, { title: "Release Date"},
+                { title: "First Seen"}, { title: "Last Seen"}
+            ],
+            order: [[2, "desc"]] // Rank songs by points by default
+          });
+
+
+          // --- Data Processing ---
+          const pointsMap = {}; // For overall points per song { songKey: { song, points, releaseDate } }
+          const monthlyPointsData = {}; // { "YYYY-MM": { songKey: {song, points, releaseDate} } }
+          const songStats = {}; // { songKey: { artist, title, peakPosition, datesInTop10Set, firstDate, lastDate, releaseDateFromMap } }
+
+          dates.forEach(dateStr => {
             const currentDate = new Date(dateStr);
             const year = currentDate.getFullYear();
-            const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // 01-12
+            const month = String(currentDate.getMonth() + 1).padStart(2, '0');
             const yearMonthKey = `${year}-${month}`;
 
             if (!monthlyPointsData[yearMonthKey]) {
@@ -373,97 +462,91 @@
             }
 
             data[dateStr].top_10.forEach(item => {
-              const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
-              const key = songName.trim().toLowerCase();
-              if (!key) return;
+              const originalSongArtistStr = item["Song / Artist"] || item["Canción / Artista"] || "";
+              if (!originalSongArtistStr) return;
+
+              const songKey = originalSongArtistStr.trim().toLowerCase();
+              const parsedName = parseSongArtist(originalSongArtistStr);
 
               const pos = Number(item.Posición || item.Position);
               if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
               
               let pts = 0;
-              if (pos === 1) pts = 12;
-              else if (pos === 2) pts = 10;
-              else if (pos === 3) pts = 8;
+              if (pos === 1) pts = 12; else if (pos === 2) pts = 10; else if (pos === 3) pts = 8;
               else if (pos >= 4 && pos <= 10) pts = 11 - pos;
 
-              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
-              if (days === -1) days = 0; // Treat -1 as 0 for calculation
+              const itemReleaseDays = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              const calculatedRelDate = calculateReleaseDate(dateStr, itemReleaseDays);
               
-              let releaseDate = '-';
-              if (days !== undefined && !isNaN(days)) {
-                const d = new Date(dateStr); // Use the specific date from JSON for this entry
-                d.setDate(d.getDate() - parseInt(days));
-                const y_r = d.getFullYear();
-                const m_r = String(d.getMonth() + 1).padStart(2, '0');
-                const da_r = String(d.getDate()).padStart(2, '0');
-                releaseDate = `${y_r}/${m_r}/${da_r}`;
+              // Overall pointsMap
+              if (!pointsMap[songKey]) {
+                pointsMap[songKey] = { song: originalSongArtistStr, points: 0, releaseDate: calculatedRelDate };
               }
-              
-              // Overall points
-              if (!pointsMap[key]) {
-                pointsMap[key] = { song: songName, points: 0, releaseDate: releaseDate };
+              pointsMap[songKey].points += pts;
+              if (pointsMap[songKey].releaseDate === '-' && calculatedRelDate !== '-') {
+                 pointsMap[songKey].releaseDate = calculatedRelDate;
               }
-              pointsMap[key].points += pts;
-              // Update release date if a more specific one is found (though typically it's fixed per song)
-              if (pointsMap[key].releaseDate === '-' && releaseDate !== '-') {
-                pointsMap[key].releaseDate = releaseDate;
-              }
-
 
               // Monthly points
-              if (!monthlyPointsData[yearMonthKey][key]) {
-                monthlyPointsData[yearMonthKey][key] = { song: songName, points: 0, releaseDate: releaseDate };
+              if (!monthlyPointsData[yearMonthKey][songKey]) {
+                monthlyPointsData[yearMonthKey][songKey] = { song: originalSongArtistStr, points: 0, releaseDate: calculatedRelDate };
               }
-              monthlyPointsData[yearMonthKey][key].points += pts;
-               if (monthlyPointsData[yearMonthKey][key].releaseDate === '-' && releaseDate !== '-') {
-                monthlyPointsData[yearMonthKey][key].releaseDate = releaseDate;
+              monthlyPointsData[yearMonthKey][songKey].points += pts;
+              if (monthlyPointsData[yearMonthKey][songKey].releaseDate === '-' && calculatedRelDate !== '-') {
+                monthlyPointsData[yearMonthKey][songKey].releaseDate = calculatedRelDate;
               }
+
+              // Song Stats for Artist section
+              if (!songStats[songKey]) {
+                songStats[songKey] = {
+                  key: songKey,
+                  fullDisplayTitle: originalSongArtistStr,
+                  artist: parsedName.artist,
+                  title: parsedName.song,
+                  peakPosition: pos,
+                  datesInTop10Set: new Set(),
+                  firstDateInTop10: dateStr,
+                  lastDateInTop10: dateStr,
+                  // releaseDate will be finalized after pointsMap is fully processed
+                };
+              } else {
+                if (pos < songStats[songKey].peakPosition) songStats[songKey].peakPosition = pos;
+                if (new Date(dateStr) < new Date(songStats[songKey].firstDateInTop10)) songStats[songKey].firstDateInTop10 = dateStr;
+                if (new Date(dateStr) > new Date(songStats[songKey].lastDateInTop10)) songStats[songKey].lastDateInTop10 = dateStr;
+              }
+              songStats[songKey].datesInTop10Set.add(dateStr);
             });
           });
 
-          // Populate Overall Points Table
+          // Finalize songStats (add total points and consistent release date from pointsMap)
+          Object.values(songStats).forEach(sStat => {
+            sStat.daysInTop10 = sStat.datesInTop10Set.size;
+            sStat.totalPoints = pointsMap[sStat.key] ? pointsMap[sStat.key].points : 0;
+            sStat.releaseDate = pointsMap[sStat.key] ? pointsMap[sStat.key].releaseDate : '-';
+          });
+
+          // --- Populate Overall Points Table ---
           const pointsArray = Object.values(pointsMap)
             .sort((a, b) => b.points - a.points)
-            .map((item, idx) => ({
-              rank: idx + 1,
-              song: item.song,
-              points: item.points,
-              releaseDate: item.releaseDate
-            }));
-          
-          pointsArray.forEach(item => {
-            pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
-          });
-          pointsTable.draw();
+            .map((item, idx) => [idx + 1, item.song, item.points, item.releaseDate]);
+          pointsTable.rows.add(pointsArray).draw();
 
-          // --- Monthly Points Table Logic ---
+          // --- Populate Monthly Points Table (initial setup) ---
+          // (Logic for populating selectors and rendering monthly table remains the same)
           const yearSelectMonthly = document.getElementById('year-select-monthly');
           const monthSelectMonthly = document.getElementById('month-select-monthly');
           const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-
-          const availableYearMonths = Object.keys(monthlyPointsData).sort((a,b) => b.localeCompare(a)); // Sort newest first "YYYY-MM"
-
+          const availableYearMonths = Object.keys(monthlyPointsData).sort((a,b) => b.localeCompare(a));
           const uniqueYears = [...new Set(availableYearMonths.map(ym => ym.split('-')[0]))];
-          uniqueYears.forEach(year => {
-            const opt = document.createElement('option');
-            opt.value = year;
-            opt.textContent = year;
-            yearSelectMonthly.appendChild(opt);
-          });
+          
+          uniqueYears.forEach(year => { /* ... add options ... */ yearSelectMonthly.add(new Option(year,year)); });
 
           function populateMonthSelector(selectedYear) {
-            monthSelectMonthly.innerHTML = ''; // Clear previous months
+            monthSelectMonthly.innerHTML = '';
             const monthsForYear = [...new Set(availableYearMonths
-              .filter(ym => ym.startsWith(selectedYear + '-'))
-              .map(ym => ym.split('-')[1])
-            )].sort((a,b) => b.localeCompare(a)); // Sort months numerically (e.g., 12, 11, ..., 01)
-
-            monthsForYear.forEach(monthNumStr => {
-              const opt = document.createElement('option');
-              opt.value = monthNumStr; // e.g., "01", "12"
-              opt.textContent = monthNames[parseInt(monthNumStr) - 1]; // Display month name
-              monthSelectMonthly.appendChild(opt);
-            });
+              .filter(ym => ym.startsWith(selectedYear + '-')).map(ym => ym.split('-')[1])
+            )].sort((a,b) => b.localeCompare(a));
+            monthsForYear.forEach(monthNumStr => { monthSelectMonthly.add(new Option(monthNames[parseInt(monthNumStr) - 1], monthNumStr)); });
           }
           
           function renderMonthlyTable(year, month) {
@@ -472,79 +555,109 @@
             if (monthlyPointsData[yearMonthKey]) {
               const monthDataArray = Object.values(monthlyPointsData[yearMonthKey])
                 .sort((a, b) => b.points - a.points)
-                .map((item, idx) => ({
-                  rank: idx + 1,
-                  song: item.song,
-                  points: item.points,
-                  releaseDate: item.releaseDate
-                }));
-              
-              monthDataArray.forEach(item => {
-                monthlyPointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
-              });
+                .map((item, idx) => [idx + 1, item.song, item.points, item.releaseDate]);
+              monthlyPointsTable.rows.add(monthDataArray);
             }
             monthlyPointsTable.draw();
           }
 
-          yearSelectMonthly.addEventListener('change', () => {
-            populateMonthSelector(yearSelectMonthly.value);
-            if (monthSelectMonthly.options.length > 0) {
-              monthSelectMonthly.value = monthSelectMonthly.options[0].value; // Select first available month
-              renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
-            } else {
-              monthlyPointsTable.clear().draw(); // No months for this year, clear table
-            }
-          });
+          yearSelectMonthly.addEventListener('change', () => { /* ... */ populateMonthSelector(yearSelectMonthly.value); if (monthSelectMonthly.options.length > 0) { monthSelectMonthly.value = monthSelectMonthly.options[0].value; renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value); } else { monthlyPointsTable.clear().draw(); }});
+          monthSelectMonthly.addEventListener('change', () => renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value));
 
-          monthSelectMonthly.addEventListener('change', () => {
-            renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
-          });
-
-          // Initial population for monthly selectors and table
-          if (uniqueYears.length > 0) {
-            yearSelectMonthly.value = uniqueYears[0]; // Select newest year by default
-            populateMonthSelector(uniqueYears[0]);
-            if (monthSelectMonthly.options.length > 0) {
-              monthSelectMonthly.value = monthSelectMonthly.options[0].value; // Select newest month by default
-              renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value);
-            }
-          }
-          // --- End Monthly Points Table Logic ---
+          if (uniqueYears.length > 0) { yearSelectMonthly.value = uniqueYears[0]; populateMonthSelector(uniqueYears[0]); if (monthSelectMonthly.options.length > 0) { monthSelectMonthly.value = monthSelectMonthly.options[0].value; renderMonthlyTable(yearSelectMonthly.value, monthSelectMonthly.value); }}
 
 
-          function renderDateTop10(date) { // Renamed to avoid conflict
+          // --- Populate Daily Top 10 Table (initial setup) ---
+          function renderDateTop10(date) {
             top10Table.clear();
             if (data[date] && data[date].top_10) {
-              data[date].top_10.forEach(item => {
-                let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
-                if (days === -1) days = 0;
-                
-                let releaseDate = '-';
-                 if (days !== undefined && !isNaN(days)) {
-                  const d = new Date(date);
-                  d.setDate(d.getDate() - parseInt(days));
-                  const y = d.getFullYear();
-                  const m = String(d.getMonth() + 1).padStart(2, '0');
-                  const da = String(d.getDate()).padStart(2, '0');
-                  releaseDate = `${y}/${m}/${da}`;
-                }
-
-                top10Table.row.add([
-                  item.Posición ?? '-',
-                  item.Cambio ?? '-',
+              const dailyData = data[date].top_10.map(item => {
+                 const itemReleaseDays = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+                 const relDate = calculateReleaseDate(date, itemReleaseDays);
+                 return [
+                  item.Posición ?? '-', item.Cambio ?? '-',
                   item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
-                  item.Streams ?? '-',
-                  item["Stream Diff"] ?? '-',
-                  item.Total ?? '-',
-                  releaseDate
-                ]);
+                  item.Streams ?? '-', item["Stream Diff"] ?? '-', item.Total ?? '-',
+                  relDate
+                ];
               });
+              top10Table.rows.add(dailyData);
             }
             top10Table.draw();
           }
-          
           dateSelect.addEventListener('change', () => renderDateTop10(dateSelect.value));
-          if (dates.length) renderDateTop10(dates[0]); // Render initial Top 10 for the latest date
+          if (dates.length) renderDateTop10(dates[0]);
+
+          // --- Artist Section Logic ---
+          const artistAggregatedData = {};
+          Object.values(songStats).forEach(song => {
+              if (!artistAggregatedData[song.artist]) {
+                  artistAggregatedData[song.artist] = {
+                      name: song.artist,
+                      songs: [],
+                      totalArtistPoints: 0,
+                  };
+              }
+              artistAggregatedData[song.artist].songs.push(song);
+              artistAggregatedData[song.artist].totalArtistPoints += song.totalPoints;
+          });
+
+          const artistDataArray = Object.values(artistAggregatedData)
+            .map(artist => {
+                artist.uniqueSongsCount = artist.songs.length;
+                // Sort songs within artist by points
+                artist.songs.sort((a, b) => b.totalPoints - a.totalPoints);
+                return artist;
+            })
+            .sort((a, b) => b.totalArtistPoints - a.totalArtistPoints); // Sort artists by total points
+
+          // Populate Artists Table
+          artistDataArray.forEach((artist, idx) => {
+              artistsTable.row.add([
+                  idx + 1,
+                  artist.name,
+                  artist.totalArtistPoints,
+                  artist.uniqueSongsCount
+              ]);
+          });
+          artistsTable.draw();
+
+          // Handle click on artist row
+          $('#table-artists tbody').on('click', 'tr', function () {
+              const artistName = $(this).find('td:nth-child(2)').text(); // Get artist name from 2nd column
+              const artistDetail = artistDataArray.find(a => a.name === artistName);
+
+              if (artistDetail) {
+                  document.getElementById('artist-list-container').style.display = 'none';
+                  document.getElementById('artist-detail-container').style.display = 'block';
+                  document.getElementById('artist-detail-name').textContent = artistDetail.name;
+                  document.getElementById('artist-summary-stats').textContent = 
+                      `Total Points: ${artistDetail.totalArtistPoints} | Unique Songs in Top 10: ${artistDetail.uniqueSongsCount}`;
+                  
+                  artistSongsTable.clear();
+                  artistDetail.songs.forEach((song, songIdx) => {
+                      artistSongsTable.row.add([
+                          songIdx + 1,
+                          song.title,
+                          song.totalPoints,
+                          song.peakPosition === 11 ? '-' : song.peakPosition, // Show '-' if never reached top 10 properly
+                          song.daysInTop10,
+                          song.releaseDate,
+                          song.firstDateInTop10,
+                          song.lastDateInTop10
+                      ]);
+                  });
+                  artistSongsTable.draw();
+                  window.scrollTo({ top: document.getElementById('artist-detail-container').offsetTop - 20, behavior: 'smooth' });
+              }
+          });
+
+          // Handle "Back to Artist List" button
+          document.getElementById('back-to-artist-list').addEventListener('click', () => {
+              document.getElementById('artist-list-container').style.display = 'block';
+              document.getElementById('artist-detail-container').style.display = 'none';
+              window.scrollTo({ top: document.getElementById('artist-list-container').offsetTop - 20, behavior: 'smooth' });
+          });
 
         })
         .catch(err => console.error('Error loading JSON:', err));
