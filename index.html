@@ -405,10 +405,18 @@
 
           const top10Table = $('#table-top10').DataTable({ ...commonTableOptions, columns: [ /*...*/] });
           // (Existing column definitions for top10Table)
-          top10Table.settings()[0].aoColumns = [
-              { title: "Position" }, { title: "Change" }, { title: "Song / Artist" },
-              { title: "Streams" }, { title: "Stream Diff" }, { title: "Total" }, { title: "Release Date" }
-          ];
+          const top10Table = $('#table-top10').DataTable({
+              ...commonTableOptions,
+              columns: [
+                  { title: "Position" },
+                  { title: "Change" },
+                  { title: "Song / Artist" },
+                  { title: "Streams" },
+                  { title: "Stream Diff" },
+                  { title: "Total" },
+                  { title: "Release Date" }
+              ]
+          });
 
 
           const pointsTable = $('#table-points').DataTable({
