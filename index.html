@@ -137,9 +137,123 @@
   </div>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
   <script>
-    // Aquí se incluiría tu fetch original, render de top10 y pointsTable, y luego:
-    // (el código JS completo con la tercera tabla que te pasé)
+    document.addEventListener('DOMContentLoaded', () => {
+      fetch('spotify_historial.json')
+        .then(res => res.json())
+        .then(data => {
+          const dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
+          const select = document.getElementById('date-select');
+          dates.forEach(date => {
+            const opt = document.createElement('option');
+            opt.value = date;
+            opt.textContent = date;
+            select.appendChild(opt);
+          });
+          const top10Table = $('#table-top10').DataTable({
+            autoWidth: false,
+            searching: true,
+            columns: [
+              { title: "Position" },
+              { title: "Change" },
+              { title: "Song / Artist" },
+              { title: "Streams" },
+              { title: "Stream Diff" },
+              { title: "Total" },
+              { title: "Release Date" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+          });
+          const pointsTable = $('#table-points').DataTable({
+            autoWidth: false,
+            searching: true,
+            columns: [
+              { title: "Rank" },
+              { title: "Song / Artist" },
+              { title: "Points" },
+              { title: "Release Date" }
+            ],
+            pageLength: 10,
+            lengthChange: false,
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/en-GB.json' }
+          });
+          const pointsMap = {};
+          dates.forEach(date => {
+            data[date].top_10.forEach(item => {
+              const songName = item["Song / Artist"] || item["Canción / Artista"] || "";
+              const key = songName.trim().toLowerCase();
+              if (!key) return;
+              const pos = Number(item.Posición || item.Position);
+              if (!Number.isInteger(pos) || pos < 1 || pos > 10) return;
+              let pts = 0;
+              if (pos === 1) pts = 12;
+              else if (pos === 2) pts = 10;
+              else if (pos === 3) pts = 8;
+              else if (pos >= 4 && pos <= 10) pts = 11 - pos;
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = ${y}/${m}/${da};
+              }
+              if (!pointsMap[key]) {
+                pointsMap[key] = { song: songName, points: 0, releaseDate };
+              }
+              pointsMap[key].points += pts;
+            });
+          });
+          const pointsArray = Object.values(pointsMap)
+            .sort((a, b) => b.points - a.points)
+            .map((item, idx) => ({
+              rank: idx + 1,
+              song: item.song,
+              points: item.points,
+              releaseDate: item.releaseDate
+            }));
+          pointsArray.forEach(item => {
+            pointsTable.row.add([item.rank, item.song, item.points, item.releaseDate]);
+          });
+          pointsTable.draw();
+          function renderDate(date) {
+            top10Table.clear();
+            data[date].top_10.forEach(item => {
+              let days = item["Release Days"] ?? item["Fecha de Lanzamiento"];
+              if (days === -1) days = 0;
+              let releaseDate = '-';
+              if (!isNaN(days)) {
+                const d = new Date(date);
+                d.setDate(d.getDate() - parseInt(days));
+                const y = d.getFullYear();
+                const m = String(d.getMonth() + 1).padStart(2, '0');
+                const da = String(d.getDate()).padStart(2, '0');
+                releaseDate = ${y}/${m}/${da};
+              }
+              top10Table.row.add([
+                item.Posición ?? '-',
+                item.Cambio ?? '-',
+                item["Song / Artist"] ?? item["Canción / Artista"] ?? '-',
+                item.Streams ?? '-',
+                item["Stream Diff"] ?? '-',
+                item.Total ?? '-',
+                releaseDate
+              ]);
+            });
+            top10Table.draw();
+          }
+          select.addEventListener('change', () => renderDate(select.value));
+          if (dates.length) renderDate(dates[0]);
+        })
+        .catch(err => console.error('Error loading JSON:', err));
+    });
   </script>
 </body>
 </html>
