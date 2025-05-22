@@ -147,7 +147,7 @@
         let collaborators = [];
 
         // Regex for (ft. ...), (feat. ...), (with ...) in the song part
-        const featRegex = /\s*\((?:ft|feat|featuring|with|w)\.?\s+([^)]+)\)/i;
+        const featRegex = /\s*\((?:ft|feat|featuring|with|(w/\.?\s+([^)]+)\)/i;
         const featMatch = songTitleCleaned.match(featRegex);
 
         if (featMatch) {
