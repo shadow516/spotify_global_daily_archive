@@ -1,0 +1,225 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    body {
+        font-family: 'Poppins', sans-serif;
+        margin: 0;
+        padding: 2rem;
+        background-color: #121212;
+        color: #e0e0e0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-height: 100vh;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 2rem;
+        color: #1DB954;
+        font-size: 2.8rem;
+        font-weight: 700;
+        letter-spacing: -1px;
+        text-shadow: 0 0 10px rgba(29, 185, 84, 0.4);
+    }
+    #controls, #monthly-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding: 1.5rem;
+        background-color: #181818;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        flex-wrap: wrap;
+    }
+    #controls label, #monthly-controls label {
+        font-size: 1.1rem;
+        margin-right: 1rem;
+        color: #b3b3b3;
+        margin-bottom: 0.5rem;
+    }
+    #date-select, #year-select-monthly, #month-select-monthly {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #333;
+        background-color: #282828;
+        color: #e0e0e0;
+        appearance: none;
+        background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23b3b3b3%22%20d%3D%22M287%2C197.399L146.2%2C56.6L5.4%2C197.399h281.6z%22%2F%3E%3C%2Fsvg%3E');
+        background-repeat: no-repeat;
+        background-position: right 0.7em top 50%, 0 0;
+        background-size: 0.65em auto, 100%;
+        cursor: pointer;
+        transition: border-color 0.3s ease;
+        margin-right: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    #date-select:hover, #year-select-monthly:hover, #month-select-monthly:hover {
+        border-color: #1DB954;
+    }
+    .tables-container {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        max-width: 900px; /* Adjusted for potentially wider artist song table */
+        margin: 0 auto;
+        gap: 2.5rem;
+    }
+    .table-wrapper {
+        flex: 1;
+        background-color: #181818;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        display: flex;
+        flex-direction: column;
+    }
+    table.dataTable {
+        width: 100% !important;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+    table.dataTable thead th {
+        background-color: #282828;
+        color: #1DB954;
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 2px solid #1DB954;
+        font-weight: 600;
+        font-size: 0.90rem; 
+    }
+    table.dataTable tbody td {
+        padding: 10px 15px;
+        border-bottom: 1px solid #333;
+        color: #e0e0e0;
+        font-size: 0.85rem; 
+        white-space: normal;
+        word-wrap: break-word;
+    }
+    #table-top10 th,
+    #table-top10 td {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    table.dataTable tbody tr:nth-child(even) {
+        background-color: #1e1e1e;
+    }
+    table.dataTable tbody tr:hover {
+        background-color: #333333;
+        cursor: pointer;
+    }
+    table.dataTable.no-footer {
+        border-bottom: none;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        color: #e0e0e0 !important;
+        border: 1px solid #555 !important;
+        background-color: #282828 !important;
+        border-radius: 5px !important;
+        margin: 0 5px;
+        transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+        background-color: #1DB954 !important;
+        color: #121212 !important;
+        border-color: #1DB954 !important;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+        background-color: #383838 !important;
+        color: #1DB954 !important;
+    }
+    .dataTables_info {
+        color: #b3b3b3;
+        font-size: 0.9rem;
+        margin-top: 1rem;
+    }
+    .dataTables_filter input {
+        padding: 0.7rem 1.2rem;
+        font-size: 1rem;
+        border-radius: 5px;
+        border: 1px solid #333;
+        background-color: #282828;
+        color: #ffffff;
+        transition: border-color 0.3s ease;
+    }
+    .dataTables_filter input::placeholder {
+        color: #b3b3b3;
+    }
+    .dataTables_filter input:hover,
+    .dataTables_filter input:focus {
+        border-color: #1DB954;
+        outline: none;
+    }
+    .dataTables_filter label {
+        color: #b3b3b3;
+        font-size: 1.1rem;
+    }
+    h3 {
+        color: #1DB954;
+        margin-top: 1.5rem;
+        margin-bottom: 0.8rem;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+      h4 {
+        color: #b3b3b3; 
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+    .table-wrapper p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+        color: #b3b3b3;
+    }
+    .spotify-button { 
+        background-color: #1DB954;
+        color: #FFFFFF;
+        border: none;
+        padding: 10px 15px;
+        border-radius: 20px;
+        cursor: pointer;
+        font-weight: bold;
+        margin-bottom: 1rem;
+        transition: background-color 0.3s ease;
+        font-size: 0.9rem;
+    }
+    .spotify-button:hover {
+        background-color: #1AA34A;
+    }
+
+    @media (max-width: 1280px) {
+        .tables-container {
+            align-items: center;
+        }
+        .table-wrapper {
+            min-width: unset;
+            width: 95%;
+        }
+    }
+    @media (max-width: 600px) {
+        body {
+            padding: 1rem;
+        }
+        h1 {
+            font-size: 2rem;
+        }
+        #controls, #monthly-controls {
+            flex-direction: column;
+            padding: 1rem;
+        }
+        #controls label, #monthly-controls label {
+            margin-bottom: 0.5rem;
+            margin-right: 0;
+        }
+        .table-wrapper {
+            padding: 1rem;
+        }
+        table.dataTable thead th,
+        table.dataTable tbody td {
+            padding: 8px 10px;
+            font-size: 0.8rem; 
+        }
+    }
