@@ -202,6 +202,20 @@
             return pointsMap[position] || 0;
         }
 
+        // Helper to calculate release date
+        function calculateReleaseDate(chartDateStr, daysSinceReleaseStr) {
+            const chartDate = new Date(chartDateStr);
+            const daysSinceRelease = parseInt(String(daysSinceReleaseStr).replace(/,/g, ''), 10);
+
+            if (isNaN(daysSinceRelease)) {
+                return null; // Cannot calculate if days are not a number
+            }
+
+            const releaseDate = new Date(chartDate);
+            releaseDate.setDate(chartDate.getDate() - daysSinceRelease);
+            return releaseDate;
+        }
+
         fetch('spotify_historial.json')
             .then(response => {
                 if (!response.ok) {
@@ -301,14 +315,20 @@
                         // Check history for last seen
                         let lastSeenDate = null;
                         let isFirstTimeEver = true;
-                        for (let i = 1; i < dates.length; i++) { // Start from second latest date
-                            const historyDate = dates[i];
+                        // Iterate through ALL dates from the start to find first appearance
+                        // This ensures "first time ever" is accurate across the full history
+                        const allDatesSortedAsc = Object.keys(data).sort((a, b) => new Date(a) - new Date(b));
+                        
+                        for (const historyDate of allDatesSortedAsc) {
+                            if (historyDate === latestDate) continue; // Skip the current date
+
                             const historyTop10 = data[historyDate]?.top_10 || [];
                             const foundInHistory = historyTop10.some(s => (s["Song / Artist"] || s["Canción / Artista"]).toLowerCase() === songKey);
+                            
                             if (foundInHistory) {
                                 lastSeenDate = new Date(historyDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
                                 isFirstTimeEver = false;
-                                break;
+                                break; // Found it, no need to check earlier
                             }
                         }
 
@@ -458,7 +478,7 @@
                 dailyHighlightsList += "</ul>";
                 htmlOutput += dailyHighlightsList;
 
-                // 4. All-Time Records & Historical Insights (Needs to iterate through ALL data)
+                // 4. All-Time Records & Historical Insights
                 htmlOutput += `<h2>All-Time Records & Historical Insights</h2>`;
                 let historicalHighlightsList = "<ul>";
                 let noHistoricalHighlights = true;
@@ -468,16 +488,17 @@
                 let allTimeMostTop10Appearances = new Map(); // songKey -> {count: num_days_in_top10, songArtist: "..."}
                 let allTimeArtistPoints = new Map(); // artistName -> total_points
                 let allTimeSongPoints = new Map(); // songKey -> total_points
-                let monthlyPoints = new Map(); // "YYYY-MM" -> total_points
-                let yearlyPoints = new Map(); // "YYYY" -> total_points
+
+                // New maps for release date based aggregates
+                let releaseMonthPoints = new Map(); // "YYYY-MM" (release date) -> total_points
+                let releaseYearPoints = new Map();  // "YYYY" (release date) -> total_points
+                
+                // Track already processed song release dates to avoid recalculating
+                const songReleaseDates = new Map(); // songKey -> Date object of its release
 
                 for (const dateString of dates) {
                     const dailyTop10 = data[dateString]?.top_10 || [];
-                    const dateObj = new Date(dateString);
-                    const yearMonth = `${dateObj.getFullYear()}-${(dateObj.getMonth() + 1).toString().padStart(2, '0')}`;
-                    const year = dateObj.getFullYear().toString();
-
-                    let dailyTotalPoints = 0;
+                    const chartDate = new Date(dateString);
 
                     if (dailyTop10.length > 0) {
                         const topSong = dailyTop10[0];
@@ -494,10 +515,10 @@
                             const songKey = songArtistFullString.toLowerCase();
                             const { artist: mainArtist, collaborators: songCollaborators } = parseSongArtistForDisplay(songArtistFullString);
                             const position = parseInt(song.Posición || song.Position, 10);
+                            const daysSinceRelease = song["Días desde lanzamiento"] || song["Days since release"]; // Get this value
 
                             if (!isNaN(position)) {
                                 const points = calculatePoints(position);
-                                dailyTotalPoints += points; // Sum points for the day
 
                                 // Aggregate points for main artist
                                 allTimeArtistPoints.set(mainArtist, (allTimeArtistPoints.get(mainArtist) || 0) + points);
@@ -516,13 +537,26 @@
                                     songArtist: songArtistFullString
                                 });
                                 allTimeSongPoints.set(songKey, (allTimeSongPoints.get(songKey) || 0) + points);
+
+                                // Calculate Release Date and aggregate points based on it
+                                let releaseDate = songReleaseDates.get(songKey);
+                                if (!releaseDate) { // Calculate only once per song
+                                    releaseDate = calculateReleaseDate(chartDate, daysSinceRelease);
+                                    if (releaseDate) {
+                                        songReleaseDates.set(songKey, releaseDate); // Store it
+                                    }
+                                }
+
+                                if (releaseDate) {
+                                    const releaseYearMonth = `${releaseDate.getFullYear()}-${(releaseDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                                    const releaseYear = releaseDate.getFullYear().toString();
+
+                                    releaseMonthPoints.set(releaseYearMonth, (releaseMonthPoints.get(releaseYearMonth) || 0) + points);
+                                    releaseYearPoints.set(releaseYear, (releaseYearPoints.get(releaseYear) || 0) + points);
+                                }
                             }
                         });
                     }
-
-                    // Accumulate monthly and yearly points
-                    monthlyPoints.set(yearMonth, (monthlyPoints.get(yearMonth) || 0) + dailyTotalPoints);
-                    yearlyPoints.set(year, (yearlyPoints.get(year) || 0) + dailyTotalPoints);
                 }
 
                 // --- Display Historical Highlights ---
@@ -577,24 +611,25 @@
                     }
                 }
 
-                // Best Month of Current Year
+                // Best Month of Current Year (based on release date)
                 const currentYear = new Date(latestDate).getFullYear().toString();
-                const currentYearMonths = Array.from(monthlyPoints.entries())
+                // Filter and sort for the current year, based on releaseMonthPoints
+                const currentYearReleaseMonths = Array.from(releaseMonthPoints.entries())
                     .filter(([monthYear, _]) => monthYear.startsWith(currentYear))
-                    .sort((a, b) => b[1] - a[1]); // Sort by points descending
+                    .sort((a, b) => b[1] - a[1]); 
 
-                if (currentYearMonths.length > 0) {
-                    const [bestMonthKey, bestMonthPoints] = currentYearMonths[0];
+                if (currentYearReleaseMonths.length > 0) {
+                    const [bestMonthKey, bestMonthPoints] = currentYearReleaseMonths[0];
                     const monthName = new Date(bestMonthKey).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                    historicalHighlightsList += `<li><strong>Best Month (Current Year - ${currentYear}):</strong> <strong>${monthName}</strong> holds the record with <span class='highlight'>${formatNumber(bestMonthPoints)}</span> total points in the Top 10.</li>`;
+                    historicalHighlightsList += `<li><strong>Best Release Month (Current Year - ${currentYear}):</strong> Songs released in <strong>${monthName}</strong> of this year have collectively earned the most points, with <span class='highlight'>${formatNumber(bestMonthPoints)}</span> total points.</li>`;
                     noHistoricalHighlights = false;
                 }
 
-                // Best Month of All Time
-                if (monthlyPoints.size > 0) {
+                // Best Month of All Time (based on release date)
+                if (releaseMonthPoints.size > 0) {
                     let bestMonthAllTimeKey = null;
                     let maxMonthPoints = 0;
-                    for (const [monthYear, points] of monthlyPoints.entries()) {
+                    for (const [monthYear, points] of releaseMonthPoints.entries()) {
                         if (points > maxMonthPoints) {
                             maxMonthPoints = points;
                             bestMonthAllTimeKey = monthYear;
@@ -602,23 +637,23 @@
                     }
                     if (bestMonthAllTimeKey) {
                         const monthName = new Date(bestMonthAllTimeKey).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
-                        historicalHighlightsList += `<li><strong>Best Month (All Time):</strong> <strong>${monthName}</strong> had the highest cumulative Top 10 score of <span class='highlight'>${formatNumber(maxMonthPoints)}</span> points.</li>`;
+                        historicalHighlightsList += `<li><strong>Best Release Month (All Time):</strong> Songs released in <strong>${monthName}</strong> have accumulated the highest cumulative Top 10 score of <span class='highlight'>${formatNumber(maxMonthPoints)}</span> points.</li>`;
                         noHistoricalHighlights = false;
                     }
                 }
 
-                // Best Year of All Time
-                if (yearlyPoints.size > 0) {
+                // Best Year of All Time (based on release date)
+                if (releaseYearPoints.size > 0) {
                     let bestYearAllTime = null;
                     let maxYearPoints = 0;
-                    for (const [year, points] of yearlyPoints.entries()) {
+                    for (const [year, points] of releaseYearPoints.entries()) {
                         if (points > maxYearPoints) {
                             maxYearPoints = points;
                             bestYearAllTime = year;
                         }
                     }
                     if (bestYearAllTime) {
-                        historicalHighlightsList += `<li><strong>Best Year (All Time):</strong> <strong>${bestYearAllTime}</strong> accumulated the most Top 10 points with a grand total of <span class='highlight'>${formatNumber(maxYearPoints)}</span> points.</li>`;
+                        historicalHighlightsList += `<li><strong>Best Release Year (All Time):</strong> Songs released in <strong>${bestYearAllTime}</strong> have collectively accumulated the most Top 10 points with a grand total of <span class='highlight'>${formatNumber(maxYearPoints)}</span> points.</li>`;
                         noHistoricalHighlights = false;
                     }
                 }
