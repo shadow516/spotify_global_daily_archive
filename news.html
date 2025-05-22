@@ -515,7 +515,7 @@
                             const songKey = songArtistFullString.toLowerCase();
                             const { artist: mainArtist, collaborators: songCollaborators } = parseSongArtistForDisplay(songArtistFullString);
                             const position = parseInt(song.Posición || song.Position, 10);
-                            const daysSinceRelease = song["Días desde lanzamiento"] || song["Days since release"]; // Get this value
+                            const daysSinceRelease = song["Días desde lanzamiento"] || song["Fecha de Lanzamiento"]; // Get this value
 
                             if (!isNaN(position)) {
                                 const points = calculatePoints(position);
