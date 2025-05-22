@@ -1,13 +1,13 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Novedades del Top 10 Global de Spotify</title>
-   <style>
-        /* Estilos básicos si no usas un CSS externo para esta página */
+    <title>Spotify Global Top 10 Insights</title>
+    <style>
+        /* Basic styles - assuming Poppins font */
         body {
-            font-family: 'Poppins', sans-serif; /* Asumiendo que quieres la misma fuente */
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 2rem;
             background-color: #121212;
@@ -23,7 +23,7 @@
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
         h1, h2 {
-            color: #1DB954; /* Verde Spotify */
+            color: #1DB954; /* Spotify Green */
             border-bottom: 1px solid #282828;
             padding-bottom: 0.5rem;
             margin-top: 1.5rem;
@@ -55,9 +55,16 @@
             padding: 1rem;
             border-radius: 5px;
             border-left: 3px solid #1DB954;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem; /* Space between items like icon and text */
         }
         .highlight {
             color: #1DB954;
+            font-weight: bold;
+        }
+        .negative-highlight {
+            color: #ff4d4f; /* Red for negative changes */
             font-weight: bold;
         }
         .date-header {
@@ -66,7 +73,6 @@
             color: #b3b3b3;
             margin-bottom: 2rem;
         }
-         /* Botón para volver al dashboard principal */
         .back-button {
             display: inline-block;
             margin-bottom: 2rem;
@@ -81,15 +87,39 @@
         .back-button:hover {
             background-color: #1AA34A;
         }
+        .movement-icon {
+            font-size: 1.2em; /* Adjust size as needed */
+            vertical-align: middle;
+        }
+        .movement-icon.up { color: #1DB954; } /* Green for up */
+        .movement-icon.down { color: #ff4d4f; } /* Red for down */
+        .movement-icon.neutral { color: #b3b3b3; } /* Grey for no change */
+
+        /* Loading spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #1DB954;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 10px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="container">
-        <a href="index.html" class="back-button">← Volver al Dashboard Principal</a>
+        <a href="index.html" class="back-button">← Back to Main Dashboard</a>
 
-        <h1>Novedades del Top 10 Global</h1>
-        <p id="fecha-actualizacion" class="date-header">Cargando datos...</p>
+        <h1>Spotify Global Top 10 Insights</h1>
+        <p id="fecha-actualizacion" class="date-header"><span class="spinner"></span> Loading data...</p>
 
         <div id="resumen-novedades">
             </div>
@@ -100,32 +130,68 @@
         const resumenContainer = document.getElementById('resumen-novedades');
         const fechaHeader = document.getElementById('fecha-actualizacion');
 
-        // --- Funciones Auxiliares ---
+        // --- Helper Functions ---
         function parseSongArtistForDisplay(songArtistString) {
-            if (!songArtistString) return { artist: 'Desconocido', song: 'Desconocida' };
+            if (!songArtistString) return { artist: 'Unknown', song: 'Unknown' };
             const parts = songArtistString.split(' - ');
             if (parts.length > 1) {
                 const artist = parts.shift().trim();
                 const song = parts.join(' - ').trim();
                 return { artist, song };
             }
-            return { artist: 'Artista Desconocido', song: songArtistString.trim() };
+            return { artist: 'Unknown Artist', song: songArtistString.trim() };
         }
 
         function formatNumber(num) {
-            if (typeof num === 'string' && num.includes(',')) num = num.replace(/,/g, ''); // Remover comas si es string
+            if (typeof num === 'string' && num.includes(',')) num = num.replace(/,/g, ''); // Remove commas if string
             const number = parseInt(num, 10);
-            return isNaN(number) ? '-' : number.toLocaleString('es-ES');
+            return isNaN(number) ? '-' : number.toLocaleString('en-US'); // Use en-US for commas
         }
 
         function getPositionChangeText(currentPos, prevPos) {
-            if (prevPos === null || prevPos === undefined) return "<span class='highlight'>(Nueva Entrada)</span>";
-            const change = prevPos - currentPos;
-            if (change > 0) return `(Sube <span class='highlight'>${change}</span> ${change === 1 ? 'posición' : 'posiciones'})`;
-            if (change < 0) return `(Baja <span class='highlight'>${Math.abs(change)}</span> ${Math.abs(change) === 1 ? 'posición' : 'posiciones'})`;
-            return "(Mantiene posición)";
+            let icon = '';
+            let text = '';
+            let className = '';
+
+            if (prevPos === null || prevPos === undefined) {
+                icon = '✨'; // Star or new entry icon
+                text = "(New Entry)";
+                className = 'highlight';
+            } else {
+                const change = prevPos - currentPos;
+                if (change > 0) {
+                    icon = '⬆️'; // Up arrow
+                    text = `(Up <span class='highlight'>${change}</span> ${change === 1 ? 'position' : 'positions'})`;
+                    className = 'up';
+                } else if (change < 0) {
+                    icon = '⬇️'; // Down arrow
+                    text = `(Down <span class='negative-highlight'>${Math.abs(change)}</span> ${Math.abs(change) === 1 ? 'position' : 'positions'})`;
+                    className = 'down';
+                } else {
+                    icon = '➡️'; // Right arrow for no change
+                    text = "(Maintains position)";
+                    className = 'neutral';
+                }
+            }
+            return `<span class="movement-icon ${className}">${icon}</span> ${text}`;
         }
 
+        // Function to calculate points based on position (similar to Eurovision scoring)
+        function calculatePoints(position) {
+            const pointsMap = {
+                1: 12,
+                2: 10,
+                3: 8,
+                4: 7,
+                5: 6,
+                6: 5,
+                7: 4,
+                8: 3,
+                9: 2,
+                10: 1
+            };
+            return pointsMap[position] || 0;
+        }
 
         fetch('spotify_historial.json')
             .then(response => {
@@ -138,8 +204,8 @@
                 const dates = Object.keys(data).sort((a, b) => new Date(b) - new Date(a));
                 
                 if (dates.length === 0) {
-                    resumenContainer.innerHTML = "<p>No hay datos disponibles en el historial.</p>";
-                    fechaHeader.textContent = "No hay datos";
+                    resumenContainer.innerHTML = "<p>No data available in the history.</p>";
+                    fechaHeader.textContent = "No data";
                     return;
                 }
 
@@ -149,7 +215,7 @@
                 const latestTop10 = data[latestDate]?.top_10 || [];
                 const previousTop10Data = previousDate ? (data[previousDate]?.top_10 || []) : [];
 
-                // Mapear el top 10 anterior para búsqueda fácil
+                // Map previous top 10 for easy lookup
                 const previousSongsMap = new Map();
                 previousTop10Data.forEach(song => {
                     const key = (song["Song / Artist"] || song["Canción / Artista"] || "").toLowerCase();
@@ -158,27 +224,27 @@
                     }
                 });
                 
-                // Formatear la fecha para mostrarla
-                const displayDate = new Date(latestDate).toLocaleDateString('es-ES', {
+                // Format the date for display
+                const displayDate = new Date(latestDate).toLocaleDateString('en-US', {
                     year: 'numeric', month: 'long', day: 'numeric'
                 });
-                fechaHeader.textContent = `Análisis del ${displayDate}`;
+                fechaHeader.innerHTML = `Analysis for ${displayDate}`; // Remove spinner
 
                 let htmlOutput = "";
 
-                // 1. Panorama General
-                htmlOutput += `<h2>Panorama General del Día</h2>`;
+                // 1. Daily Overview
+                htmlOutput += `<h2>Daily Overview</h2>`;
                 if (latestTop10.length > 0) {
                     const { song: songN1, artist: artistN1 } = parseSongArtistForDisplay(latestTop10[0]["Song / Artist"] || latestTop10[0]["Canción / Artista"]);
-                    htmlOutput += `<p>El día de hoy, <strong>${songN1}</strong> de <strong>${artistN1}</strong> lidera el Top 10 Global.</p>`;
+                    htmlOutput += `<p>Today, <strong>${songN1}</strong> by <strong>${artistN1}</strong> leads the Global Top 10.</p>`;
                 } else {
-                     htmlOutput += `<p>No hay datos para el Top 10 del día de hoy.</p>`;
+                    htmlOutput += `<p>No Top 10 data available for today.</p>`;
                 }
 
 
-                // 2. Nuevas Entradas y Movimientos
+                // 2. New Entries and Movements
                 const newEntries = [];
-                const movements = []; // Para subidas, bajadas, mantenimientos
+                const movements = []; // For climbs, drops, maintains
 
                 latestTop10.forEach(currentSong => {
                     const songKey = (currentSong["Song / Artist"] || currentSong["Canción / Artista"] || "").toLowerCase();
@@ -191,14 +257,14 @@
                     
                     const changeText = getPositionChangeText(currentPos, prevPos);
 
-                    let listItem = `<li><strong>#${currentPos} ${parsedCurrent.song}</strong> - ${parsedCurrent.artist} ${changeText}. Streams: ${currentStreams}.`;
+                    let listItem = `<li>${changeText} <strong>#${currentPos} ${parsedCurrent.song}</strong> by ${parsedCurrent.artist}. Streams: ${currentStreams}.`;
                     if (currentSong["Stream Diff"]) {
-                        const diff = parseInt(String(currentSong["Stream Diff"]).replace(/,/g, ''), 10); // Limpiar y convertir
+                        const diff = parseInt(String(currentSong["Stream Diff"]).replace(/,/g, ''), 10); // Clean and convert
                         if (!isNaN(diff)) {
-                             listItem += ` Diferencia: <span class="${diff >= 0 ? 'highlight' : 'negative-highlight'}">${formatNumber(diff)}</span>.`;
+                             listItem += ` Stream difference: <span class="${diff >= 0 ? 'highlight' : 'negative-highlight'}">${formatNumber(diff)}</span>.`;
                         }
                     }
-                     listItem += `</li>`;
+                    listItem += `</li>`;
 
 
                     if (prevPos === null) {
@@ -208,32 +274,32 @@
                     }
                 });
                 
-                // Ordenar 'movements' por posición actual para mostrarlos en orden
+                // Sort 'movements' by current position to display them in order
                 movements.sort((a,b) => a.pos - b.pos);
 
 
                 if (newEntries.length > 0) {
-                    htmlOutput += `<h2>Nuevas Entradas en el Top 10</h2><ul>${newEntries.join('')}</ul>`;
+                    htmlOutput += `<h2>New Entries in the Top 10</h2><ul>${newEntries.join('')}</ul>`;
                 } else {
-                    htmlOutput += `<h2>Nuevas Entradas en el Top 10</h2><p>No hay nuevas entradas en el Top 10 hoy.</p>`;
+                    htmlOutput += `<h2>New Entries in the Top 10</h2><p>No new entries in the Top 10 today.</p>`;
                 }
 
-                htmlOutput += `<h2>Movimientos y Posiciones Actuales</h2>`;
+                htmlOutput += `<h2>Current Positions & Movements</h2>`;
                 if (movements.length > 0) {
-                     htmlOutput += `<ul>${movements.map(m => m.item).join('')}</ul>`;
-                } else if (newEntries.length === 0) { // Si no hay movimientos ni nuevas entradas (raro)
-                     htmlOutput += `<p>El Top 10 se mantiene idéntico al día anterior o no hay datos suficientes para comparar.</p>`;
-                } else { // Si solo hubo nuevas entradas pero no otros movimientos (porque el resto salió)
-                     htmlOutput += `<p>Todas las canciones que no son nuevas entradas han salido del Top 10.</p>`;
+                    htmlOutput += `<ul>${movements.map(m => m.item).join('')}</ul>`;
+                } else if (newEntries.length === 0) { // If no movements and no new entries (rare)
+                    htmlOutput += `<p>The Top 10 remains identical to the previous day or insufficient data for comparison.</p>`;
+                } else { // If only new entries but no other movements (because the rest left)
+                    htmlOutput += `<p>All songs not listed as new entries have left the Top 10.</p>`;
                 }
 
 
-                // 3. Hitos Destacados
-                htmlOutput += `<h2>Hitos y Datos Destacados</h2>`;
-                let hitosList = "<ul>";
-                let noHitos = true;
+                // 3. Daily Highlights & Key Data
+                htmlOutput += `<h2>Daily Highlights</h2>`;
+                let dailyHighlightsList = "<ul>";
+                let noDailyHighlights = true;
 
-                // Canción con más streams
+                // Song with most streams
                 if (latestTop10.length > 0) {
                     let maxStreams = -1;
                     let songMaxStreams = null;
@@ -246,14 +312,14 @@
                     });
                     if (songMaxStreams) {
                         const parsed = parseSongArtistForDisplay(songMaxStreams["Song / Artist"] || songMaxStreams["Canción / Artista"]);
-                        hitosList += `<li><strong>Líder en Streams:</strong> '${parsed.song}' de ${parsed.artist} es la canción con más streams hoy, acumulando <strong>${formatNumber(maxStreams)}</strong> reproducciones.</li>`;
-                        noHitos = false;
+                        dailyHighlightsList += `<li><strong>Stream Leader:</strong> '${parsed.song}' by ${parsed.artist} has the most streams today, accumulating <strong>${formatNumber(maxStreams)}</strong> plays.</li>`;
+                        noDailyHighlights = false;
                     }
                 }
                 
-                // Canción con mayor aumento de streams (Stream Diff)
-                if (latestTop10.length > 0 && previousDate) { // Solo si hay día anterior para comparar
-                    let maxStreamDiff = -Infinity; // Empezar bajo para encontrar el máximo positivo
+                // Song with largest stream increase (Stream Diff)
+                if (latestTop10.length > 0 && previousDate) { // Only if there's a previous day to compare
+                    let maxStreamDiff = -Infinity; // Start low to find the highest positive
                     let songMaxStreamDiff = null;
                     latestTop10.forEach(s => {
                         if (s["Stream Diff"]) {
@@ -265,37 +331,186 @@
                         }
                     });
 
-                    if (songMaxStreamDiff && maxStreamDiff > 0) { // Solo mostrar si hay un aumento positivo
+                    if (songMaxStreamDiff && maxStreamDiff > 0) { // Only show if there's a positive increase
                         const parsed = parseSongArtistForDisplay(songMaxStreamDiff["Song / Artist"] || songMaxStreamDiff["Canción / Artista"]);
-                        hitosList += `<li><strong>Mayor Crecimiento:</strong> '${parsed.song}' de ${parsed.artist} tuvo el mayor aumento en streams respecto al día anterior, con <strong>+${formatNumber(maxStreamDiff)}</strong> streams.</li>`;
-                        noHitos = false;
+                        dailyHighlightsList += `<li><strong>Biggest Stream Growth:</strong> '${parsed.song}' by ${parsed.artist} saw the largest increase in streams from the previous day, with <strong>+${formatNumber(maxStreamDiff)}</strong> streams.</li>`;
+                        noDailyHighlights = false;
                     }
                 }
 
-                // Si el #1 se mantuvo y estaba en el día anterior
+                // Biggest Climber
+                let biggestClimber = null;
+                let maxPositionGain = 0; 
+                latestTop10.forEach(currentSong => {
+                    const songKey = (currentSong["Song / Artist"] || currentSong["Canción / Artista"] || "").toLowerCase();
+                    const currentPos = parseInt(currentSong.Posición || currentSong.Position, 10);
+                    const prevSongData = previousSongsMap.get(songKey);
+                    const prevPos = prevSongData ? parseInt(prevSongData.Posición || prevSongData.Position, 10) : null;
+
+                    if (prevPos !== null) { 
+                        const positionGain = prevPos - currentPos;
+                        if (positionGain > maxPositionGain) {
+                            maxPositionGain = positionGain;
+                            biggestClimber = currentSong;
+                        }
+                    }
+                });
+
+                if (biggestClimber && maxPositionGain > 0) {
+                    const parsed = parseSongArtistForDisplay(biggestClimber["Song / Artist"] || biggestClimber["Canción / Artista"]);
+                    dailyHighlightsList += `<li><strong>Top Climber:</strong> '${parsed.song}' by ${parsed.artist} made the biggest climb today, rising <span class='highlight'>${maxPositionGain}</span> positions to reach <strong>#${parseInt(biggestClimber.Posición || biggestClimber.Position, 10)}</strong>.</li>`;
+                    noDailyHighlights = false;
+                }
+
+                // Biggest Dropper
+                let biggestDropper = null;
+                let maxPositionDrop = 0; 
+                latestTop10.forEach(currentSong => {
+                    const songKey = (currentSong["Song / Artist"] || currentSong["Canción / Artista"] || "").toLowerCase();
+                    const currentPos = parseInt(currentSong.Posición || currentSong.Position, 10);
+                    const prevSongData = previousSongsMap.get(songKey);
+                    const prevPos = prevSongData ? parseInt(prevSongData.Posición || prevSongData.Position, 10) : null;
+
+                    if (prevPos !== null) {
+                        const positionDrop = currentPos - prevPos; 
+                        if (positionDrop > maxPositionDrop) {
+                            maxPositionDrop = positionDrop;
+                            biggestDropper = currentSong;
+                        }
+                    }
+                });
+
+                if (biggestDropper && maxPositionDrop > 0) { 
+                    const parsed = parseSongArtistForDisplay(biggestDropper["Song / Artist"] || biggestDropper["Canción / Artista"]);
+                    dailyHighlightsList += `<li><strong>Top Dropper:</strong> '${parsed.song}' by ${parsed.artist} experienced the biggest drop, falling <span class='negative-highlight'>${maxPositionDrop}</span> positions to <strong>#${parseInt(biggestDropper.Posición || biggestDropper.Position, 10)}</strong>.</li>`;
+                    noDailyHighlights = false;
+                }
+
+
+                // If #1 maintained and was in previous day
                 if (latestTop10.length > 0 && previousTop10Data.length > 0) {
                     const currentN1Key = (latestTop10[0]["Song / Artist"] || latestTop10[0]["Canción / Artista"] || "").toLowerCase();
                     const prevN1Key = (previousTop10Data[0]["Song / Artist"] || previousTop10Data[0]["Canción / Artista"] || "").toLowerCase();
                     if (currentN1Key === prevN1Key && parseInt(latestTop10[0].Posición || latestTop10[0].Position, 10) === 1) {
-                         const parsed = parseSongArtistForDisplay(latestTop10[0]["Song / Artist"] || latestTop10[0]["Canción / Artista"]);
-                         hitosList += `<li><strong>Consolidado en la Cima:</strong> '${parsed.song}' de ${parsed.artist} se mantiene firme en la posición <strong>#1</strong>.</li>`;
-                         noHitos = false;
+                           const parsed = parseSongArtistForDisplay(latestTop10[0]["Song / Artist"] || latestTop10[0]["Canción / Artista"]);
+                           dailyHighlightsList += `<li><strong>Holding the Top Spot:</strong> '${parsed.song}' by ${parsed.artist} remains strong at <strong>#1</strong>.</li>`;
+                           noDailyHighlights = false;
                     }
                 }
 
 
-                if (noHitos) {
-                    hitosList += "<li>No hay hitos especiales que destacar hoy o datos insuficientes para algunos cálculos.</li>";
+                if (noDailyHighlights) {
+                    dailyHighlightsList += "<li>No specific daily highlights to feature today or insufficient data for some calculations.</li>";
                 }
-                hitosList += "</ul>";
-                htmlOutput += hitosList;
+                dailyHighlightsList += "</ul>";
+                htmlOutput += dailyHighlightsList;
+
+                // 4. All-Time Records & Historical Insights (Needs to iterate through ALL data)
+                htmlOutput += `<h2>All-Time Records & Historical Insights</h2>`;
+                let historicalHighlightsList = "<ul>";
+                let noHistoricalHighlights = true;
+
+                // Calculate all-time #1 song
+                let allTimeNumberOne = new Map(); // songKey -> {count: num_days_at_1, songArtist: "..."}
+                let allTimeMostTop10Appearances = new Map(); // songKey -> {count: num_days_in_top10, songArtist: "..."}
+                let allTimeArtistPoints = new Map(); // artistName -> total_points
+
+                for (const date of dates) {
+                    const dailyTop10 = data[date]?.top_10 || [];
+                    if (dailyTop10.length > 0) {
+                        const topSong = dailyTop10[0];
+                        const topSongKey = (topSong["Song / Artist"] || topSong["Canción / Artista"] || "").toLowerCase();
+                        if (topSongKey) {
+                            allTimeNumberOne.set(topSongKey, {
+                                count: (allTimeNumberOne.get(topSongKey)?.count || 0) + 1,
+                                songArtist: topSong["Song / Artist"] || topSong["Canción / Artista"]
+                            });
+                        }
+
+                        dailyTop10.forEach(song => {
+                            const songKey = (song["Song / Artist"] || song["Canción / Artista"] || "").toLowerCase();
+                            if (songKey) {
+                                allTimeMostTop10Appearances.set(songKey, {
+                                    count: (allTimeMostTop10Appearances.get(songKey)?.count || 0) + 1,
+                                    songArtist: song["Song / Artist"] || song["Canción / Artista"]
+                                });
+                            }
+
+                            // Calculate points for artists
+                            const parsed = parseSongArtistForDisplay(song["Song / Artist"] || song["Canción / Artista"]);
+                            const position = parseInt(song.Posición || song.Position, 10);
+                            if (!isNaN(position)) {
+                                const points = calculatePoints(position);
+                                allTimeArtistPoints.set(parsed.artist, (allTimeArtistPoints.get(parsed.artist) || 0) + points);
+                            }
+                        });
+                    }
+                }
+
+                // Find the longest reigning #1
+                if (allTimeNumberOne.size > 0) {
+                    let longestReignSong = null;
+                    let maxDaysAtOne = 0;
+                    for (const [key, value] of allTimeNumberOne.entries()) {
+                        if (value.count > maxDaysAtOne) {
+                            maxDaysAtOne = value.count;
+                            longestReignSong = value.songArtist;
+                        }
+                    }
+                    if (longestReignSong) {
+                        const parsed = parseSongArtistForDisplay(longestReignSong);
+                        historicalHighlightsList += `<li><strong>Longest Reigning #1:</strong> '${parsed.song}' by ${parsed.artist} has spent a total of <span class='highlight'>${maxDaysAtOne}</span> days at the #1 spot since 2017.</li>`;
+                        noHistoricalHighlights = false;
+                    }
+                }
+
+                // Find the song with most Top 10 appearances
+                if (allTimeMostTop10Appearances.size > 0) {
+                    let mostAppearancesSong = null;
+                    let maxAppearances = 0;
+                    for (const [key, value] of allTimeMostTop10Appearances.entries()) {
+                        if (value.count > maxAppearances) {
+                            maxAppearances = value.count;
+                            mostAppearancesSong = value.songArtist;
+                        }
+                    }
+                    if (mostAppearancesSong) {
+                        const parsed = parseSongArtistForDisplay(mostAppearancesSong);
+                        historicalHighlightsList += `<li><strong>Most Top 10 Appearances:</strong> '${parsed.song}' by ${parsed.artist} has appeared in the Top 10 on <span class='highlight'>${maxAppearances}</span> different days.</li>`;
+                        noHistoricalHighlights = false;
+                    }
+                }
+
+                // Find artist with most cumulative points
+                if (allTimeArtistPoints.size > 0) {
+                    let topArtistByPoints = null;
+                    let maxPoints = 0;
+                    for (const [artist, points] of allTimeArtistPoints.entries()) {
+                        if (points > maxPoints) {
+                            maxPoints = points;
+                            topArtistByPoints = artist;
+                        }
+                    }
+                    if (topArtistByPoints) {
+                        historicalHighlightsList += `<li><strong>Top Artist by Cumulative Score:</strong> <strong>${topArtistByPoints}</strong> has accumulated the most points (based on Top 10 positions) with a total of <span class='highlight'>${formatNumber(maxPoints)}</span> points across all their songs.</li>`;
+                        noHistoricalHighlights = false;
+                    }
+                }
+
+
+                if (noHistoricalHighlights) {
+                    historicalHighlightsList += "<li>No specific historical records to highlight or insufficient data for some calculations.</li>";
+                }
+                historicalHighlightsList += "</ul>";
+                htmlOutput += historicalHighlightsList;
+
 
                 resumenContainer.innerHTML = htmlOutput;
 
             })
             .catch(error => {
-                console.error('Error al cargar o procesar los datos:', error);
-                resumenContainer.innerHTML = `<p>Ocurrió un error al cargar las novedades. Revisa la consola para más detalles. Asegúrate de que el archivo <code>spotify_historial.json</code> es accesible y tiene el formato correcto.</p>`;
+                console.error('Error loading or processing data:', error);
+                resumenContainer.innerHTML = `<p>An error occurred while loading insights. Please check the console for more details. Ensure that <code>spotify_historial.json</code> is accessible and correctly formatted.</p>`;
                 fechaHeader.textContent = "Error";
             });
     });
